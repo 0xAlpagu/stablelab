@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Escrow — StableLab</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#f5f7fa; --surface:#ffffff; --surface-alt:#eef2f8; --border:#dde3ec;
+    --text:#0f1b2d; --text-mute:#5b6b82; --text-faint:#8a97ab;
+    --primary:#2f5fe0; --primary-dark:#1e3fa8; --primary-soft:#e8edfc;
+    --ok:#0f9d58; --err:#d33b2c; --radius:10px;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: "SF Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--text); font-family:var(--sans); font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+  .wrap{max-width:760px;margin:0 auto;padding:24px 20px 80px;}
+  a.back{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:var(--text-mute); text-decoration:none; margin-bottom:20px; }
+  a.back:hover{ color:var(--primary); }
+
+  .hero{ margin-bottom:28px; }
+  .eyebrow{ font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--primary); margin-bottom:8px; }
+  h1{ font-size:32px; font-weight:800; margin:0 0 10px; letter-spacing:-0.02em; }
+  .lede{ font-size:14.5px; color:var(--text-mute); max-width:60ch; line-height:1.65; }
+
+  .howcard{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1px;
+    background:var(--border); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:28px 0;
+  }
+  .howstep{ background:var(--surface); padding:18px; }
+  .howstep .num{ font-size:11px; font-weight:800; color:var(--primary); margin-bottom:6px; }
+  .howstep .title{ font-weight:700; font-size:13px; margin-bottom:4px; }
+  .howstep .desc{ font-size:12px; color:var(--text-mute); line-height:1.5; }
+
+  .usecase{
+    background:var(--primary-soft); border:1px solid #d3ddfa; border-radius:var(--radius);
+    padding:16px 20px; margin-bottom:28px; font-size:13px; color:#33447a; line-height:1.6;
+  }
+  .usecase b{ color:var(--primary-dark); }
+
+  .section{ border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); box-shadow:0 1px 2px rgba(15,27,45,0.04); margin-bottom:20px; }
+  .section .head{ padding:14px 20px; border-bottom:1px solid var(--border); background:var(--surface-alt); font-weight:700; font-size:14.5px; }
+  .body{ padding:20px; }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+  .row:last-child{margin-bottom:0;}
+  input[type=text], input[type=number]{
+    font-family:var(--sans); font-size:13.5px; background:var(--surface); border:1px solid var(--border);
+    border-radius:8px; padding:10px 13px; flex:1; min-width:140px; color:var(--text);
+  }
+  input:focus{ outline:none; border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-soft); }
+  .act{ font-family:var(--sans); font-size:12.5px; font-weight:600; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:9px 14px; cursor:pointer; }
+  .act:hover{ background:var(--surface-alt); border-color:var(--primary); }
+  .act.primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
+  .act.primary:hover{ background:var(--primary-dark); }
+  .hint{ font-size:11.5px; color:var(--text-faint); margin-top:10px; }
+  .stat-line{ display:flex; justify-content:space-between; font-size:12.5px; padding:8px 0; border-bottom:1px solid var(--surface-alt); }
+  .stat-line:last-of-type{ border-bottom:none; }
+  .stat-line .k{ color:var(--text-mute); }
+  .stat-line .v{ font-weight:700; font-family:var(--mono); font-size:12px; }
+
+  #connectBtn{ font-family:var(--sans); font-weight:600; font-size:13px; background:var(--primary); color:#fff; border:none; border-radius:8px; padding:10px 18px; cursor:pointer; }
+  #connectBtn:hover{ background:var(--primary-dark); }
+  #connectBtn:disabled{ opacity:.6; }
+  .acct{ font-size:11.5px; color:var(--text-mute); font-family:var(--mono); margin-top:6px; }
+
+  #log{ position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:var(--text); color:#fff; border-radius:8px; font-size:12.5px; padding:11px 20px; display:none; z-index:50; box-shadow:0 4px 16px rgba(15,27,45,0.25); max-width:90vw; }
+  #log.show{display:block;}
+  #log.err{background:var(--err);}
+  #log.ok{background:var(--ok);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../">← StableLab'a Dön</a>
+
+  <div class="hero">
+    <div class="eyebrow">StableLab · Escrow Modülü</div>
+    <h1>Güvenle emanet edilen ödemeler</h1>
+    <div class="lede">
+      İki taraf birbirine tam güvenmiyor mu? Escrow, parayı doğrudan karşı tarafa göndermek yerine zincir üzerinde kilitler ve yalnızca üzerinde anlaşılan koşul gerçekleştiğinde serbest bırakır — bir hakem (arbiter) devrede olduğu sürece anlaşmazlıklarda bile adil bir çözüm yolu sunar.
+    </div>
+  </div>
+
+  <div class="usecase">
+    <b>Örnek senaryo:</b> Bir freelancer'a proje karşılığı ödeme yapacaksınız. Parayı doğrudan gönderirseniz iş bitmeden kaybolma riski var; freelancer önce iş yapıp sonra ödeme bekleseniz güven sorunu onun tarafında oluşur. Escrow ile parayı kilitlersiniz, güvenilir bir üçüncü kişiyi (ya da kendinizi) hakem atarsınız — iş tamamlanınca ödeme serbest bırakılır, anlaşmazlık çıkarsa hakem karar verir.
+  </div>
+
+  <div class="howcard">
+    <div class="howstep"><div class="num">01</div><div class="title">Anlaşma oluştur</div><div class="desc">Alıcı ve hakem adresini belirleyip tutarı kilitlersin.</div></div>
+    <div class="howstep"><div class="num">02</div><div class="title">İş tamamlanır</div><div class="desc">Taraflar üzerinde anlaştığı iş/teslimat gerçekleşir.</div></div>
+    <div class="howstep"><div class="num">03</div><div class="title">Serbest bırak</div><div class="desc">Sen ya da hakem onaylar, ödeme alıcıya gider.</div></div>
+    <div class="howstep"><div class="num">04</div><div class="title">Anlaşmazlık</div><div class="desc">Sorun varsa hakem, ya alıcıya ya da sana iade karar verir.</div></div>
+  </div>
+
+  <div style="margin-bottom:24px;">
+    <button id="connectBtn">Cüzdanı Bağla</button>
+    <div class="acct" id="acctInfo"></div>
+  </div>
+
+  <div class="section">
+    <div class="head">Yeni Anlaşma Oluştur</div>
+    <div class="body">
+      <div class="row"><input type="text" id="escrowBeneficiary" placeholder="Alıcı (beneficiary) adresi — 0x..." /></div>
+      <div class="row">
+        <input type="text" id="escrowArbiter" placeholder="Hakem (arbiter) adresi — 0x..." />
+        <input type="number" id="escrowAmount" placeholder="Miktar (tARC)" />
+        <button class="act primary" id="btnCreateDeal">Anlaşma Oluştur</button>
+      </div>
+      <div class="hint">Miktar kilitlenir; hakem ya da sen serbest bırakana/iade edene kadar bekler.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="head">Anlaşma Yönet</div>
+    <div class="body">
+      <div class="row">
+        <input type="number" id="dealIdInput" placeholder="Anlaşma ID" />
+        <button class="act" id="btnDealCheck">Sorgula</button>
+        <button class="act primary" id="btnDealRelease">Serbest Bırak</button>
+        <button class="act" id="btnDealRefund">İade Et</button>
+      </div>
+      <div class="stat-line"><span class="k">Anlaşma durumu</span><span class="v" id="dealStatusVal">—</span></div>
+      <div class="hint">Serbest bırakma: gönderen ya da hakem yapabilir. İade: alıcı ya da hakem yapabilir.</div>
+    </div>
+  </div>
+</div>
+
+<div id="log"></div>
+
+<script>
+const ADDR = {
+  tARC:   "0xc59bD7aA02688Db21EaD5926998aE9B691E6811E",
+  Escrow: "0xaD9115aA0d4BEbA4EBa3660623E2790122d12833"
+};
+const ERC20_ABI = [
+  "function balanceOf(address) view returns (uint256)",
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function allowance(address owner, address spender) view returns (uint256)"
+];
+const ESCROW_ABI = [
+  "function createDeal(address beneficiary, address arbiter, uint256 amount) returns (uint256)",
+  "function release(uint256 dealId)",
+  "function refund(uint256 dealId)",
+  "function getDeal(uint256 dealId) view returns (address,address,address,uint256,uint8)"
+];
+const STATUS = ["Aktif", "Serbest Bırakıldı", "İade Edildi"];
+
+let provider, signer, account, tARC, escrow;
+
+function log(msg, type){
+  const el = document.getElementById('log');
+  el.textContent = msg;
+  el.className = 'show' + (type ? ' ' + type : '');
+  clearTimeout(window.__t);
+  window.__t = setTimeout(()=>{ el.className=''; }, 6000);
+}
+function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 18)).toLocaleString('tr-TR', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
+function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 18); }
+
+async function connect(){
+  if(!window.ethereum){ log("Cüzdan uzantısı bulunamadı (Rabby/MetaMask).", "err"); return; }
+  try{
+    provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    await provider.send("eth_requestAccounts", []);
+    signer = provider.getSigner();
+    account = await signer.getAddress();
+    document.getElementById('acctInfo').textContent = account.slice(0,6) + "…" + account.slice(-4);
+    tARC = new ethers.Contract(ADDR.tARC, ERC20_ABI, signer);
+    escrow = new ethers.Contract(ADDR.Escrow, ESCROW_ABI, signer);
+    document.getElementById('connectBtn').textContent = "Bağlandı";
+    document.getElementById('connectBtn').disabled = true;
+  }catch(e){ log("Bağlantı hatası: " + (e.message || e), "err"); }
+}
+
+async function ensureApproval(amountWei){
+  const allowance = await tARC.allowance(account, ADDR.Escrow);
+  if(allowance.lt(amountWei)){
+    log("İzin isteniyor…");
+    const tx = await tARC.approve(ADDR.Escrow, ethers.constants.MaxUint256);
+    await tx.wait();
+  }
+}
+
+async function doCreateDeal(){
+  const beneficiary = document.getElementById('escrowBeneficiary').value.trim();
+  const arbiter = document.getElementById('escrowArbiter').value.trim();
+  const amt = document.getElementById('escrowAmount').value;
+  if(!account){ log("Önce cüzdanı bağla.", "err"); return; }
+  if(!ethers.utils.isAddress(beneficiary) || !ethers.utils.isAddress(arbiter)){ log("Geçerli adresler gir.", "err"); return; }
+  if(!amt || Number(amt) <= 0){ log("Geçerli bir miktar gir.", "err"); return; }
+  try{
+    const wei = toWei(amt);
+    await ensureApproval(wei);
+    log("Anlaşma oluşturuluyor…");
+    const tx = await escrow.createDeal(beneficiary, arbiter, wei);
+    await tx.wait();
+    log("Anlaşma oluşturuldu.", "ok");
+  }catch(e){ log("İşlem başarısız: " + (e.reason || e.message || e), "err"); }
+}
+async function doDealCheck(){
+  const id = document.getElementById('dealIdInput').value;
+  if(id === "" || id === null){ log("Anlaşma ID gir.", "err"); return; }
+  try{
+    const d = await escrow.getDeal(id);
+    document.getElementById('dealStatusVal').textContent = fmt(d[3]) + " tARC — " + STATUS[d[4]];
+  }catch(e){ log("Sorgu başarısız: " + (e.reason || e.message || e), "err"); }
+}
+async function doDealRelease(){
+  const id = document.getElementById('dealIdInput').value;
+  if(id === "" || id === null){ log("Anlaşma ID gir.", "err"); return; }
+  try{
+    log("Serbest bırakılıyor…");
+    const tx = await escrow.release(id);
+    await tx.wait();
+    log("Serbest bırakıldı.", "ok");
+    await doDealCheck();
+  }catch(e){ log("İşlem başarısız: " + (e.reason || e.message || e), "err"); }
+}
+async function doDealRefund(){
+  const id = document.getElementById('dealIdInput').value;
+  if(id === "" || id === null){ log("Anlaşma ID gir.", "err"); return; }
+  try{
+    log("İade ediliyor…");
+    const tx = await escrow.refund(id);
+    await tx.wait();
+    log("İade edildi.", "ok");
+    await doDealCheck();
+  }catch(e){ log("İşlem başarısız: " + (e.reason || e.message || e), "err"); }
+}
+
+document.getElementById('connectBtn').addEventListener('click', connect);
+document.getElementById('btnCreateDeal').addEventListener('click', doCreateDeal);
+document.getElementById('btnDealCheck').addEventListener('click', doDealCheck);
+document.getElementById('btnDealRelease').addEventListener('click', doDealRelease);
+document.getElementById('btnDealRefund').addEventListener('click', doDealRefund);
+</script>
+</body>
+</html>
