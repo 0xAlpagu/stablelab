@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Multi-sig Cüzdan — StableLab</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#f5f7fa; --surface:#ffffff; --surface-alt:#eef2f8; --border:#dde3ec;
+    --text:#0f1b2d; --text-mute:#5b6b82; --text-faint:#8a97ab;
+    --primary:#2f5fe0; --primary-dark:#1e3fa8; --primary-soft:#e8edfc;
+    --ok:#0f9d58; --err:#d33b2c; --radius:10px;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: "SF Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--text); font-family:var(--sans); font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+  .wrap{max-width:760px;margin:0 auto;padding:24px 20px 80px;}
+  a.back{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:var(--text-mute); text-decoration:none; margin-bottom:20px; }
+  a.back:hover{ color:var(--primary); }
+
+  .hero{ margin-bottom:28px; }
+  .eyebrow{ font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--primary); margin-bottom:8px; }
+  h1{ font-size:32px; font-weight:800; margin:0 0 10px; letter-spacing:-0.02em; }
+  .lede{ font-size:14.5px; color:var(--text-mute); max-width:60ch; line-height:1.65; }
+
+  .signers-demo{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:20px; margin:24px 0; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .signer-dot{
+    width:38px; height:38px; border-radius:50%; background:var(--primary-soft); color:var(--primary-dark);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; border:2px solid var(--primary);
+  }
+  .signer-dot.pending{ background:var(--surface-alt); color:var(--text-faint); border-color:var(--border); border-style:dashed; }
+  .signers-arrow{ color:var(--text-faint); font-size:18px; }
+  .signers-label{ font-size:11.5px; color:var(--text-mute); width:100%; margin-top:6px; }
+
+  .howcard{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1px;
+    background:var(--border); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:28px 0;
+  }
+  .howstep{ background:var(--surface); padding:18px; }
+  .howstep .num{ font-size:11px; font-weight:800; color:var(--primary); margin-bottom:6px; }
+  .howstep .title{ font-weight:700; font-size:13px; margin-bottom:4px; }
+  .howstep .desc{ font-size:12px; color:var(--text-mute); line-height:1.5; }
+
+  .usecase{
+    background:var(--primary-soft); border:1px solid #d3ddfa; border-radius:var(--radius);
+    padding:16px 20px; margin-bottom:28px; font-size:13px; color:#33447a; line-height:1.6;
+  }
+  .usecase b{ color:var(--primary-dark); }
+
+  .section{ border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); box-shadow:0 1px 2px rgba(15,27,45,0.04); margin-bottom:20px; }
+  .section .head{ padding:14px 20px; border-bottom:1px solid var(--border); background:var(--surface-alt); font-weight:700; font-size:14.5px; }
+  .body{ padding:20px; }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+  .row:last-child{margin-bottom:0;}
+  input[type=text], input[type=number]{
+    font-family:var(--sans); font-size:13.5px; background:var(--surface); border:1px solid var(--border);
+    border-radius:8px; padding:10px 13px; flex:1; min-width:140px; color:var(--text);
+  }
+  input:focus{ outline:none; border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-soft); }
+  .act{ font-family:var(--sans); font-size:12.5px; font-weight:600; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:9px 14px; cursor:pointer; }
+  .act:hover{ background:var(--surface-alt); border-color:var(--primary); }
+  .act.primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
+  .act.primary:hover{ background:var(--primary-dark); }
+  .hint{ font-size:11.5px; color:var(--text-faint); margin-top:10px; }
+  .stat-line{ display:flex; justify-content:space-between; font-size:12.5px; padding:8px 0; border-bottom:1px solid var(--surface-alt); }
+  .stat-line:last-of-type{ border-bottom:none; }
+  .stat-line .k{ color:var(--text-mute); }
+  .stat-line .v{ font-weight:700; font-family:var(--mono); font-size:12px; }
+
+  #connectBtn{ font-family:var(--sans); font-weight:600; font-size:13px; background:var(--primary); color:#fff; border:none; border-radius:8px; padding:10px 18px; cursor:pointer; }
+  #connectBtn:hover{ background:var(--primary-dark); }
+  #connectBtn:disabled{ opacity:.6; }
+  .acct{ font-size:11.5px; color:var(--text-mute); font-family:var(--mono); margin-top:6px; }
+
+  #log{ position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:var(--text); color:#fff; border-radius:8px; font-size:12.5px; padding:11px 20px; display:none; z-index:50; box-shadow:0 4px 16px rgba(15,27,45,0.25); max-width:90vw; }
+  #log.show{display:block;}
+  #log.err{background:var(--err);}
+  #log.ok{background:var(--ok);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../">← StableLab'a Dön</a>
+
+  <div class="hero">
+    <div class="eyebrow">StableLab · Multi-sig Cüzdan Modülü</div>
+    <h1>Tek imza asla yeterli değil</h1>
+    <div class="lede">
+      Multi-sig, bir ortak kasa oluşturur — paranın çıkması için tek bir kişinin değil, önceden belirlenmiş sayıda yetkilinin onayı gerekir. Bir cüzdan ele geçirilse bile, tek başına para çekilemez.
+    </div>
+  </div>
+
+  <div class="signers-demo">
+    <div class="signer-dot">✓</div>
+    <div class="signer-dot">✓</div>
+    <div class="signer-dot pending">?</div>
+    <div class="signers-arrow">→</div>
+    <div class="signer-dot" style="background:var(--ok); border-color:var(--ok); color:#fff;">$</div>
+    <div class="signers-label">Örnek: 3 yetkiliden 2'si onaylayınca işlem otomatik gerçekleşir</div>
+  </div>
+
+  <div class="usecase">
+    <b>Örnek senaryo:</b> Sen ve iki iş ortağın ortak bir şirket kasası kuruyorsunuz (3 kişi, 2 onay yeterli). Biri tek başına parayı çekemez — biri "500 tARC şuraya gönderilsin" diye bir teklif açar, en az 2 kişi onaylarsa işlem otomatik gerçekleşir. Tek kişinin cüzdanı çalınsa bile, para güvende kalır.
+  </div>
+
+  <div class="howcard">
+    <div class="howstep"><div class="num">01</div><div class="title">Kasaya yatır</div><div class="desc">Ortak fonu, kasaya token yatırarak oluşturursun.</div></div>
+    <div class="howstep"><div class="num">02</div><div class="title">Teklif aç</div><div class="desc">Herhangi bir yetkili, bir transfer teklif eder.</div></div>
+    <div class="howstep"><div class="num">03</div><div class="title">Onaylar toplanır</div><div class="desc">Diğer yetkililer teklifi tek tek onaylar.</div></div>
+    <div class="howstep"><div class="num">04</div><div class="title">Otomatik gerçekleşir</div><div class="desc">Eşik sayıya ulaşınca transfer kendiliğinden yapılır.</div></div>
+  </div>
+
+  <div style="margin-bottom:24px;">
+    <button id="connectBtn">Cüzdanı Bağla</button>
+    <div class="acct" id="acctInfo"></div>
+  </div>
+
+  <div class="section">
+    <div class="head">Kasaya Yatır</div>
+    <div class="body">
+      <div class="row">
+        <input type="number" id="msigDepositAmt" placeholder="Miktar (tARC)" />
+        <button class="act primary" id="btnMsigDeposit">Kasaya Yatır</button>
+      </div>
+      <div class="hint">Kasaya yatırdığın tARC, teklif onaylanana kadar kasada bekler.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="head">Transfer Teklif Et</div>
+    <div class="body">
+      <div class="row">
+        <input type="text" id="msigTo" placeholder="Alıcı adresi — 0x..." />
+        <input type="number" id="msigAmount" placeholder="Miktar (tARC)" />
+        <button class="act primary" id="btnMsigPropose">Teklif Oluştur</button>
+      </div>
+      <div class="hint">Teklif oluşturduktan sonra, gereken sayıda yetkilinin onaylaması gerekir.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="head">Teklif Yönet</div>
+    <div class="body">
+      <div class="row">
+        <input type="number" id="msigProposalId" placeholder="Teklif ID" />
+        <button class="act" id="btnMsigCheck">Sorgula</button>
+        <button class="act primary" id="btnMsigConfirm">Onayla</button>
+      </div>
+      <div class="stat-line"><span class="k">Gereken onay sayısı</span><span class="v" id="msigRequiredVal">—</span></div>
+      <div class="stat-line"><span class="k">Teklif bilgisi</span><span class="v" id="msigProposalVal">—</span></div>
+      <div class="hint">Önce kasaya yatır, sonra bir transfer teklif et, yeterli onay toplanınca otomatik gerçekleşir.</div>
+    </div>
+  </div>
+</div>
+
+<div id="log"></div>
+
+<script>
+const ADDR = {
+  tARC:     "0xc59bD7aA02688Db21EaD5926998aE9B691E6811E",
+  MultiSig: "0x57439F6a623eC8C4d56B286dB22e71b2a99DEA81"
+};
+const ERC20_ABI = [
+  "function balanceOf(address) view returns (uint256)",
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function allowance(address owner, address spender) view returns (uint256)"
+];
+const MULTISIG_ABI = [
+  "function deposit(uint256 amount)",
+  "function proposeTransfer(address to, uint256 amount) returns (uint256)",
+  "function confirm(uint256 proposalId)",
+  "function proposals(uint256) view returns (address to, uint256 amount, uint256 confirmations, bool executed)",
+  "function required() view returns (uint256)"
+];
+
+let provider, signer, account, tARC, multisig;
+
+function log(msg, type){
+  const el = document.getElementById('log');
+  el.textContent = msg;
+  el.className = 'show' + (type ? ' ' + type : '');
+  clearTimeout(window.__t);
+  window.__t = setTimeout(()=>{ el.className=''; }, 6000);
+}
+function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 18)).toLocaleString('tr-TR', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
+function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 18); }
+
+async function connect(){
+  if(!window.ethereum){ log("Cüzdan uzantısı bulunamadı (Rabby/MetaMask).", "err"); return; }
+  try{
+    provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    await provider.send("eth_requestAccounts", []);
+    signer = provider.getSigner();
+    account = await signer.getAddress();
+    document.getElementById('acctInfo').textContent = account.slice(0,6) + "…" + account.slice(-4);
+    tARC = new ethers.Contract(ADDR.tARC, ERC20_ABI, signer);
+    multisig = new ethers.Contract(ADDR.MultiSig, MULTISIG_ABI, signer);
+    document.getElementById('connectBtn').textContent = "Bağlandı";
+    document.getElementById('connectBtn').disabled = true;
+  }catch(e){ log("Bağlantı hatası: " + (e.message || e), "err"); }
+}
+
+async function ensureApproval(amountWei){
+  const allowance = await tARC.allowance(account, ADDR.MultiSig);
+  if(allowance.lt(amountWei)){
+    log("İzin isteniyor…");
+    const tx = await tARC.approve(ADDR.MultiSig, ethers.constants.MaxUint256);
+    await tx.wait();
+  }
+}
+
+async function doMsigDeposit(){
+  const amt = document.getElementById('msigDepositAmt').value;
+  if(!account){ log("Önce cüzdanı bağla.", "err"); return; }
+  if(!amt || Number(amt) <= 0){ log("Geçerli bir miktar gir.", "err"); return; }
+  try{
+    const wei = toWei(amt);
+    await ensureApproval(wei);
+    log("Kasaya yatırılıyor…");
+    const tx = await multisig.deposit(wei);
+    await tx.wait();
+    log("Yatırma başarılı.", "ok");
+  }catch(e){ log("İşlem başarısız: " + (e.reason || e.message || e), "err"); }
+}
+async function doMsigPropose(){
+  const to = document.getElementById('msigTo').value.trim();
+  const amt = document.getElementById('msigAmount').value;
+  if(!account){ log("Önce cüzdanı bağla.", "err"); return; }
+  if(!ethers.utils.isAddress(to)){ log("Geçerli bir alıcı adresi gir.", "err"); return; }
+  if(!amt || Number(amt) <= 0){ log("Geçerli bir miktar gir.", "err"); return; }
+  try{
+    log("Teklif gönderiliyor…");
+    const tx = await multisig.proposeTransfer(to, toWei(amt));
+    await tx.wait();
+    log("Teklif oluşturuldu.", "ok");
+  }catch(e){ log("İşlem başarısız: " + (e.reason || e.message || e), "err"); }
+}
+async function doMsigCheck(){
+  try{
+    const req = await multisig.required();
+    document.getElementById('msigRequiredVal').textContent = req.toString();
+    const id = document.getElementById('msigProposalId').value;
+    if(id !== "" && id !== null){
+      const p = await multisig.proposals(id);
+      document.getElementById('msigProposalVal').textContent =
+        p.to.slice(0,6) + "…" + p.to.slice(-4) + " · " + fmt(p.amount) + " tARC · " +
+        p.confirmations.toString() + "/" + req.toString() + (p.executed ? " ✓" : "");
+    }
+  }catch(e){ log("Sorgu başarısız: " + (e.reason || e.message || e), "err"); }
+}
+async function doMsigConfirm(){
+  const id = document.getElementById('msigProposalId').value;
+  if(id === "" || id === null){ log("Teklif ID gir.", "err"); return; }
+  try{
+    log("Onaylanıyor…");
+    const tx = await multisig.confirm(id);
+    await tx.wait();
+    log("Onaylandı.", "ok");
+    await doMsigCheck();
+  }catch(e){ log("İşlem başarısız: " + (e.reason || e.message || e), "err"); }
+}
+
+document.getElementById('connectBtn').addEventListener('click', connect);
+document.getElementById('btnMsigDeposit').addEventListener('click', doMsigDeposit);
+document.getElementById('btnMsigPropose').addEventListener('click', doMsigPropose);
+document.getElementById('btnMsigCheck').addEventListener('click', doMsigCheck);
+document.getElementById('btnMsigConfirm').addEventListener('click', doMsigConfirm);
+</script>
+</body>
+</html>
