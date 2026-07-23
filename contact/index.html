@@ -33,6 +33,7 @@
     transition:border-color .15s, transform .15s;
   }
   .contact-card:hover{ border-color:var(--primary); transform:translateY(-2px); }
+  .contact-card.no-link:hover{ border-color:var(--border); transform:none; cursor:default; }
   .contact-emoji{ font-size:26px; }
   .contact-title{ font-weight:800; font-size:16px; }
   .contact-desc{ font-size:12.5px; color:var(--text-mute); line-height:1.55; }
@@ -58,20 +59,30 @@
   </div>
 
   <div class="contact-grid">
+    <a class="contact-card" href="https://x.com/0xAlpagu" target="_blank" rel="noopener">
+      <div class="contact-emoji">𝕏</div>
+      <div class="contact-title">X (Twitter)</div>
+      <div class="contact-desc">@0xAlpagu — follow for updates and reach out directly.</div>
+    </a>
+    <div class="contact-card no-link">
+      <div class="contact-emoji">💬</div>
+      <div class="contact-title">Discord</div>
+      <div class="contact-desc">@0xalpagu — add me as a friend in the Discord app to chat directly.</div>
+    </div>
     <a class="contact-card" href="https://github.com/0xAlpagu/stablelab" target="_blank" rel="noopener">
       <div class="contact-emoji">💻</div>
       <div class="contact-title">GitHub Repository</div>
       <div class="contact-desc">All source code, contracts, and the site itself are open; explore, fork, contribute.</div>
     </a>
     <a class="contact-card" href="https://discord.gg/buildonarc" target="_blank" rel="noopener">
-      <div class="contact-emoji">💬</div>
+      <div class="contact-emoji">🌐</div>
       <div class="contact-title">Arc Discord Community</div>
       <div class="contact-desc">Join Arc's official community, meet other developers and builders.</div>
     </a>
   </div>
 
   <div class="note">
-    <b>Note:</b> This project is not run by an official corporate support team. Instead of expecting "customer service", think of this as a curious developer's open-source experiment; the best place for questions and suggestions is GitHub.
+    <b>Note:</b> This project is not run by an official corporate support team. Instead of expecting "customer service", think of this as a curious developer's open-source experiment; the best place for direct contact is X or Discord above.
   </div>
 </div>
 </body>
