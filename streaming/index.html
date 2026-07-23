@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Payment Streaming — StableLab</title>
+<title>FlowPay · StableLab</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
 <style>
   :root{
@@ -18,8 +18,11 @@
   html,body{margin:0;padding:0;}
   body{ background:var(--bg); color:var(--text); font-family:var(--sans); font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; }
   .wrap{max-width:760px;margin:0 auto;padding:24px 20px 80px;}
-  a.back{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:var(--text-mute); text-decoration:none; margin-bottom:20px; }
-  a.back:hover{ color:var(--primary); }
+  .brand-back{ display:inline-flex; align-items:baseline; gap:8px; text-decoration:none; margin-bottom:24px; }
+  .brand-back .logo{ font-family:var(--sans); font-weight:800; font-size:40px; color:var(--text); letter-spacing:-0.015em; }
+  .brand-back .logo .slash{ color:var(--primary); }
+  .brand-back .hint{ font-size:11px; color:var(--text-faint); font-weight:600; transition:color .15s; }
+  .brand-back:hover .hint{ color:var(--primary); }
 
   .hero{ margin-bottom:28px; }
   .eyebrow{ font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--primary); margin-bottom:8px; }
@@ -83,62 +86,65 @@
 </head>
 <body>
 <div class="wrap">
-  <a class="back" href="../">← StableLab'a Dön</a>
+  <a class="brand-back" href="../">
+    <span class="logo">Stable<span class="slash">Lab</span></span>
+    <span class="hint">← Click for homepage</span>
+  </a>
 
   <div class="hero">
-    <div class="eyebrow">StableLab · Payment Streaming Modülü</div>
-    <h1>Para, zamanla akar</h1>
+    <div class="eyebrow">StableLab · FlowPay Module</div>
+    <h1>Money flows over time</h1>
     <div class="lede">
-      Ödemeler her zaman tek seferlik olmak zorunda değil. Payment Streaming, bir tutarı belirlediğin süre boyunca saniye saniye akıtır — alıcı her an, o ana kadar hak ettiği kısmı çekebilir. Sen de akışı istediğin an durdurup henüz akmamış kısmı geri alabilirsin.
+      Payments don't always have to be one-time. FlowPay streams an amount second by second over a duration you set; the recipient can withdraw whatever they've earned so far, at any moment. You can also stop the stream any time and reclaim the portion that hasn't flowed yet.
     </div>
   </div>
 
   <div class="progress-demo">
-    <div class="lbl">Örnek: 1000 tARC, 24 saatte akıyor</div>
+    <div class="lbl">Example: 1000 tARC flowing over 24 hours</div>
     <div class="progress-track"><div class="progress-fill"></div></div>
-    <div class="progress-labels"><span>0 tARC</span><span>~380 tARC hak edildi (9 saat sonra)</span><span>1000 tARC</span></div>
+    <div class="progress-labels"><span>0 tARC</span><span>~380 tARC earned (after 9 hours)</span><span>1000 tARC</span></div>
   </div>
 
   <div class="usecase">
-    <b>Örnek senaryo:</b> Uzaktan çalışan bir ekip üyesine aylık maaş ödüyorsun. Ay sonunu beklemek yerine, "30 günde 3000 tARC akıt" dersin. Çalışan 15. günde ihtiyacı olursa o ana kadar hak ettiği ~1500 tARC'ı çekebilir — sen de tam zamanında, otomatik olarak ödemiş olursun. İşten ayrılırsa, henüz akmamış kısmı iptal edip geri alırsın.
+    <b>Example scenario:</b> You pay a remote team member their monthly salary. Instead of waiting until month's end, you say "stream 3000 tARC over 30 days". If the employee needs it on day 15, they can withdraw the ~1500 tARC they've earned so far; you've effectively paid right on time, automatically. If they leave, you cancel and reclaim the portion that hasn't flowed yet.
   </div>
 
   <div class="howcard">
-    <div class="howstep"><div class="num">01</div><div class="title">Akış başlat</div><div class="desc">Alıcı, toplam tutar ve süreyi belirlersin.</div></div>
-    <div class="howstep"><div class="num">02</div><div class="title">Zaman akar</div><div class="desc">Her saniye, tutarın orantılı bir kısmı "hak edilir".</div></div>
-    <div class="howstep"><div class="num">03</div><div class="title">Alıcı çeker</div><div class="desc">İstediği an, o ana kadar hak ettiğini alabilir.</div></div>
-    <div class="howstep"><div class="num">04</div><div class="title">İptal (opsiyonel)</div><div class="desc">Gönderen, kalan (akmamış) kısmı geri alabilir.</div></div>
+    <div class="howstep"><div class="num">01</div><div class="title">Start a stream</div><div class="desc">You set the recipient, total amount, and duration.</div></div>
+    <div class="howstep"><div class="num">02</div><div class="title">Time flows</div><div class="desc">Every second, a proportional part of the amount is "earned".</div></div>
+    <div class="howstep"><div class="num">03</div><div class="title">Recipient withdraws</div><div class="desc">They can claim what they've earned so far, whenever.</div></div>
+    <div class="howstep"><div class="num">04</div><div class="title">Cancel (optional)</div><div class="desc">The sender can reclaim the remaining (unflowed) portion.</div></div>
   </div>
 
   <div style="margin-bottom:24px;">
-    <button id="connectBtn">Cüzdanı Bağla</button>
+    <button id="connectBtn">Connect Wallet</button>
     <div class="acct" id="acctInfo"></div>
   </div>
 
   <div class="section">
-    <div class="head">Yeni Akış Başlat</div>
+    <div class="head">Start a New Stream</div>
     <div class="body">
-      <div class="row"><input type="text" id="streamRecipient" placeholder="Alıcı adresi — 0x..." /></div>
+      <div class="row"><input type="text" id="streamRecipient" placeholder="Recipient address (0x...)" /></div>
       <div class="row">
-        <input type="number" id="streamAmount" placeholder="Toplam miktar (tARC)" />
-        <input type="number" id="streamDuration" placeholder="Süre (saniye)" />
-        <button class="act primary" id="btnCreateStream">Akış Başlat</button>
+        <input type="number" id="streamAmount" placeholder="Total amount (tARC)" />
+        <input type="number" id="streamDuration" placeholder="Duration (seconds)" />
+        <button class="act primary" id="btnCreateStream">Start Stream</button>
       </div>
-      <div class="hint">Örnek: 3600 saniyede 100 tARC akıtmak için süreye 3600 yaz.</div>
+      <div class="hint">Example: to stream 100 tARC over 3600 seconds, enter 3600 for duration.</div>
     </div>
   </div>
 
   <div class="section">
-    <div class="head">Akış Yönet</div>
+    <div class="head">Manage Stream</div>
     <div class="body">
       <div class="row">
-        <input type="number" id="streamIdInput" placeholder="Akış ID" />
-        <button class="act" id="btnStreamCheck">Sorgula</button>
-        <button class="act primary" id="btnStreamWithdraw">Hak Edileni Çek</button>
-        <button class="act" id="btnStreamCancel">Akışı İptal Et</button>
+        <input type="number" id="streamIdInput" placeholder="Stream ID" />
+        <button class="act" id="btnStreamCheck">Check</button>
+        <button class="act primary" id="btnStreamWithdraw">Withdraw Earned</button>
+        <button class="act" id="btnStreamCancel">Cancel Stream</button>
       </div>
-      <div class="stat-line"><span class="k">Şu an çekilebilir miktar</span><span class="v" id="streamWithdrawable">—</span></div>
-      <div class="hint">Akış ID'sini not al — sorgulama ve çekme işlemleri için gerekli.</div>
+      <div class="stat-line"><span class="k">Currently withdrawable amount</span><span class="v" id="streamWithdrawable">—</span></div>
+      <div class="hint">Note down the Stream ID; needed for checking and withdrawing.</div>
     </div>
   </div>
 </div>
@@ -148,7 +154,7 @@
 <script>
 const ADDR = {
   tARC:      "0xc59bD7aA02688Db21EaD5926998aE9B691E6811E",
-  Streaming: "0x1003e5DBf043A3BC5ca6A48fb54017B330065945"
+  Streaming: "0x3537D795Cfb04c65F477991aa1FB4979F1F544C6"
 };
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
@@ -171,11 +177,11 @@ function log(msg, type){
   clearTimeout(window.__t);
   window.__t = setTimeout(()=>{ el.className=''; }, 6000);
 }
-function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 18)).toLocaleString('tr-TR', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
+function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 18)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
 function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 18); }
 
 async function connect(){
-  if(!window.ethereum){ log("Cüzdan uzantısı bulunamadı (Rabby/MetaMask).", "err"); return; }
+  if(!window.ethereum){ log("No wallet extension found (Rabby/MetaMask).", "err"); return; }
   try{
     provider = new ethers.providers.Web3Provider(window.ethereum, "any");
     await provider.send("eth_requestAccounts", []);
@@ -184,15 +190,15 @@ async function connect(){
     document.getElementById('acctInfo').textContent = account.slice(0,6) + "…" + account.slice(-4);
     tARC = new ethers.Contract(ADDR.tARC, ERC20_ABI, signer);
     streaming = new ethers.Contract(ADDR.Streaming, STREAMING_ABI, signer);
-    document.getElementById('connectBtn').textContent = "Bağlandı";
+    document.getElementById('connectBtn').textContent = "Connected";
     document.getElementById('connectBtn').disabled = true;
-  }catch(e){ log("Bağlantı hatası: " + (e.message || e), "err"); }
+  }catch(e){ log("Connection error: " + (e.message || e), "err"); }
 }
 
 async function ensureApproval(amountWei){
   const allowance = await tARC.allowance(account, ADDR.Streaming);
   if(allowance.lt(amountWei)){
-    log("İzin isteniyor…");
+    log("Requesting approval…");
     const tx = await tARC.approve(ADDR.Streaming, ethers.constants.MaxUint256);
     await tx.wait();
   }
@@ -202,47 +208,47 @@ async function doCreateStream(){
   const recipient = document.getElementById('streamRecipient').value.trim();
   const amt = document.getElementById('streamAmount').value;
   const dur = document.getElementById('streamDuration').value;
-  if(!account){ log("Önce cüzdanı bağla.", "err"); return; }
-  if(!ethers.utils.isAddress(recipient)){ log("Geçerli bir alıcı adresi gir.", "err"); return; }
-  if(!amt || Number(amt) <= 0 || !dur || Number(dur) <= 0){ log("Geçerli miktar ve süre gir.", "err"); return; }
+  if(!account){ log("Connect your wallet first.", "err"); return; }
+  if(!ethers.utils.isAddress(recipient)){ log("Enter a valid recipient address.", "err"); return; }
+  if(!amt || Number(amt) <= 0 || !dur || Number(dur) <= 0){ log("Enter a valid amount and duration.", "err"); return; }
   try{
     const wei = toWei(amt);
     await ensureApproval(wei);
-    log("Akış oluşturuluyor…");
+    log("Creating stream…");
     const tx = await streaming.createStream(recipient, wei, Math.floor(Number(dur)));
     await tx.wait();
-    log("Ödeme akışı oluşturuldu.", "ok");
-  }catch(e){ log("İşlem başarısız: " + (e.reason || e.message || e), "err"); }
+    log("Payment stream created.", "ok");
+  }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
 async function doStreamCheck(){
   const id = document.getElementById('streamIdInput').value;
-  if(id === "" || id === null){ log("Akış ID gir.", "err"); return; }
+  if(id === "" || id === null){ log("Enter a Stream ID.", "err"); return; }
   try{
     const w = await streaming.withdrawable(id);
     document.getElementById('streamWithdrawable').textContent = fmt(w) + " tARC";
-  }catch(e){ log("Sorgu başarısız: " + (e.reason || e.message || e), "err"); }
+  }catch(e){ log("Query failed: " + (e.reason || e.message || e), "err"); }
 }
 async function doStreamWithdraw(){
   const id = document.getElementById('streamIdInput').value;
-  if(id === "" || id === null){ log("Akış ID gir.", "err"); return; }
+  if(id === "" || id === null){ log("Enter a Stream ID.", "err"); return; }
   try{
-    log("Hak edilen miktar çekiliyor…");
+    log("Withdrawing earned amount…");
     const tx = await streaming.withdraw(id);
     await tx.wait();
-    log("Çekme işlemi başarılı.", "ok");
+    log("Withdrawal successful.", "ok");
     await doStreamCheck();
-  }catch(e){ log("İşlem başarısız: " + (e.reason || e.message || e), "err"); }
+  }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
 async function doStreamCancel(){
   const id = document.getElementById('streamIdInput').value;
-  if(id === "" || id === null){ log("Akış ID gir.", "err"); return; }
+  if(id === "" || id === null){ log("Enter a Stream ID.", "err"); return; }
   try{
-    log("Akış iptal ediliyor…");
+    log("Cancelling stream…");
     const tx = await streaming.cancelStream(id);
     await tx.wait();
-    log("Akış iptal edildi.", "ok");
+    log("Stream cancelled.", "ok");
     await doStreamCheck();
-  }catch(e){ log("İşlem başarısız: " + (e.reason || e.message || e), "err"); }
+  }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
 
 document.getElementById('connectBtn').addEventListener('click', connect);
@@ -250,6 +256,15 @@ document.getElementById('btnCreateStream').addEventListener('click', doCreateStr
 document.getElementById('btnStreamCheck').addEventListener('click', doStreamCheck);
 document.getElementById('btnStreamWithdraw').addEventListener('click', doStreamWithdraw);
 document.getElementById('btnStreamCancel').addEventListener('click', doStreamCancel);
+
+/* ---------- Auto-reconnect ---------- */
+(async function(){
+  if(!window.ethereum) return;
+  try{
+    const accs = await window.ethereum.request({ method: 'eth_accounts' });
+    if(accs && accs.length){ await connect(); }
+  }catch(e){ console.error(e); }
+})();
 </script>
 </body>
 </html>
