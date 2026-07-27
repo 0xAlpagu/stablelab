@@ -175,7 +175,7 @@ function log(msg, type){
   el.textContent = msg;
   el.className = 'show' + (type ? ' ' + type : '');
   clearTimeout(window.__t);
-  window.__t = setTimeout(()=>{ el.className=''; }, 6000);
+  window.__t = setTimeout(()=>{ el.className=''; }, 10000);
 }
 function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 18)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
 function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 18); }
@@ -216,8 +216,25 @@ async function doCreateStream(){
     await ensureApproval(wei);
     log("Creating stream…");
     const tx = await streaming.createStream(recipient, wei, Math.floor(Number(dur)));
-    await tx.wait();
-    log("Payment stream created.", "ok");
+    const receipt = await tx.wait();
+
+    let newStreamId = null;
+    const iface = new ethers.utils.Interface([
+      "event StreamCreated(uint256 indexed streamId, address indexed sender, address indexed recipient, uint256 amount, uint256 startTime, uint256 endTime, uint256 platformFee)"
+    ]);
+    for(const l of receipt.logs){
+      try{
+        const parsed = iface.parseLog(l);
+        if(parsed.name === "StreamCreated"){ newStreamId = parsed.args.streamId.toString(); break; }
+      }catch(e){ /* not this event, skip */ }
+    }
+
+    if(newStreamId !== null){
+      document.getElementById('streamIdInput').value = newStreamId;
+      log("Stream created! Your Stream ID is " + newStreamId + " (auto-filled below).", "ok");
+    } else {
+      log("Payment stream created, but the Stream ID could not be read automatically. Check the transaction logs on the explorer.", "ok");
+    }
   }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
 async function doStreamCheck(){
