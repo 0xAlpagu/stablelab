@@ -104,19 +104,19 @@
   <div class="flow-demo">
     <div class="flow-step">Invoice issued<span class="big">100 tARC</span></div>
     <div class="flow-arrow">→</div>
-    <div class="flow-step">Paid instantly<span class="big">90 tARC</span></div>
+    <div class="flow-step">Paid instantly<span class="big">97 tARC</span></div>
     <div class="flow-arrow">→</div>
     <div class="flow-step">Collected at due date<span class="big">100 tARC (+ late fee if any)</span></div>
   </div>
 
   <div class="usecase">
-    <b>Example scenario:</b> A freelancer does work for a global company and issues an invoice with 30-day terms. Instead of dealing with a cash flow crunch during that time, they upload their invoice to VeloPay and receive 90% of the amount in their wallet within seconds. When the due date arrives, the company pays directly into the pool; if late, a 0.1% daily late fee applies. Investors providing liquidity earn from this spread.
+    <b>Example scenario:</b> A freelancer does work for a global company and issues an invoice with 30-day terms. Instead of dealing with a cash flow crunch during that time, they upload their invoice to VeloPay and receive 97% of the amount in their wallet within seconds. When the due date arrives, the company pays directly into the pool; if late, a 0.1% daily late fee applies. Investors providing liquidity earn from this spread.
   </div>
 
   <div class="howcard">
     <div class="howstep"><div class="num">01</div><div class="title">Liquidity to the pool</div><div class="desc">Investors supply the liquidity that funds invoices.</div></div>
     <div class="howstep"><div class="num">02</div><div class="title">Create invoice</div><div class="desc">A record is opened with the debtor, amount, and due date.</div></div>
-    <div class="howstep"><div class="num">03</div><div class="title">Pay 90% instantly</div><div class="desc">Most of the amount lands in the account within seconds.</div></div>
+    <div class="howstep"><div class="num">03</div><div class="title">Pay 97% instantly</div><div class="desc">Most of the amount lands in the account within seconds.</div></div>
     <div class="howstep"><div class="num">04</div><div class="title">Collection at due date</div><div class="desc">Debtor pays; if late, a late fee applies.</div></div>
   </div>
 
@@ -147,7 +147,7 @@
         <input type="number" id="veloDueDate" placeholder="Due date (Unix timestamp)" />
         <button class="act primary" id="btnCreateInvoice">Create Invoice</button>
       </div>
-      <div class="hint">The moment you create it, 90% of the amount is sent to your wallet.</div>
+      <div class="hint">The moment you create it, 97% of the amount is sent to your wallet.</div>
     </div>
   </div>
 
@@ -196,7 +196,7 @@ function log(msg, type){
   el.textContent = msg;
   el.className = 'show' + (type ? ' ' + type : '');
   clearTimeout(window.__t);
-  window.__t = setTimeout(()=>{ el.className=''; }, 6000);
+  window.__t = setTimeout(()=>{ el.className=''; }, 10000);
 }
 function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 18)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
 function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 18); }
@@ -249,8 +249,25 @@ async function doCreateInvoice(){
   try{
     log("Creating invoice…");
     const tx = await velopay.createInvoice(debtor, toWei(faceValue), Math.floor(Number(dueDate)));
-    await tx.wait();
-    log("Invoice created, 90% sent to your wallet.", "ok");
+    const receipt = await tx.wait();
+
+    let newInvoiceId = null;
+    const iface = new ethers.utils.Interface([
+      "event InvoiceCreated(uint256 indexed id, address indexed freelancer, address indexed debtor, uint256 faceValue, uint256 dueDate, uint256 advanced)"
+    ]);
+    for(const l of receipt.logs){
+      try{
+        const parsed = iface.parseLog(l);
+        if(parsed.name === "InvoiceCreated"){ newInvoiceId = parsed.args.id.toString(); break; }
+      }catch(e){ /* not this event, skip */ }
+    }
+
+    if(newInvoiceId !== null){
+      document.getElementById('veloInvoiceId').value = newInvoiceId;
+      log("Invoice created, 97% sent to your wallet! Your Invoice ID is " + newInvoiceId + " (auto-filled below).", "ok");
+    } else {
+      log("Invoice created, 97% sent to your wallet, but the Invoice ID could not be read automatically.", "ok");
+    }
   }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
 
