@@ -192,7 +192,7 @@ function log(msg, type){
   el.textContent = msg;
   el.className = 'show' + (type ? ' ' + type : '');
   clearTimeout(window.__t);
-  window.__t = setTimeout(()=>{ el.className=''; }, 6000);
+  window.__t = setTimeout(()=>{ el.className=''; }, 10000);
 }
 function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 18)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
 function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 18); }
@@ -243,8 +243,25 @@ async function doMsigPropose(){
   try{
     log("Sending proposal…");
     const tx = await multisig.proposeTransfer(to, toWei(amt));
-    await tx.wait();
-    log("Proposal created.", "ok");
+    const receipt = await tx.wait();
+
+    let newProposalId = null;
+    const iface = new ethers.utils.Interface([
+      "event ProposalCreated(uint256 indexed proposalId, address indexed to, uint256 amount)"
+    ]);
+    for(const l of receipt.logs){
+      try{
+        const parsed = iface.parseLog(l);
+        if(parsed.name === "ProposalCreated"){ newProposalId = parsed.args.proposalId.toString(); break; }
+      }catch(e){ /* not this event, skip */ }
+    }
+
+    if(newProposalId !== null){
+      document.getElementById('msigProposalId').value = newProposalId;
+      log("Proposal created! Your Proposal ID is " + newProposalId + " (auto-filled below).", "ok");
+    } else {
+      log("Proposal created, but the Proposal ID could not be read automatically. Check the transaction logs on the explorer.", "ok");
+    }
   }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
 async function doMsigCheck(){
