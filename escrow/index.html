@@ -161,7 +161,7 @@ function log(msg, type){
   el.textContent = msg;
   el.className = 'show' + (type ? ' ' + type : '');
   clearTimeout(window.__t);
-  window.__t = setTimeout(()=>{ el.className=''; }, 6000);
+  window.__t = setTimeout(()=>{ el.className=''; }, 10000);
 }
 function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 18)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
 function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 18); }
@@ -202,8 +202,25 @@ async function doCreateDeal(){
     await ensureApproval(wei);
     log("Creating deal…");
     const tx = await escrow.createDeal(beneficiary, arbiter, wei);
-    await tx.wait();
-    log("Deal created.", "ok");
+    const receipt = await tx.wait();
+
+    let newDealId = null;
+    const iface = new ethers.utils.Interface([
+      "event DealCreated(uint256 indexed dealId, address indexed depositor, address indexed beneficiary, address arbiter, uint256 amount)"
+    ]);
+    for(const l of receipt.logs){
+      try{
+        const parsed = iface.parseLog(l);
+        if(parsed.name === "DealCreated"){ newDealId = parsed.args.dealId.toString(); break; }
+      }catch(e){ /* not this event, skip */ }
+    }
+
+    if(newDealId !== null){
+      document.getElementById('dealIdInput').value = newDealId;
+      log("Deal created! Your Deal ID is " + newDealId + " (auto-filled below).", "ok");
+    } else {
+      log("Deal created, but the Deal ID could not be read automatically. Check the transaction logs on the explorer.", "ok");
+    }
   }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
 async function doDealCheck(){
