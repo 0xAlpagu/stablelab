@@ -86,16 +86,16 @@
     <div class="eyebrow">StableLab · Staking Module</div>
     <h1>Lock your asset, earn rewards over time</h1>
     <div class="lede">
-      Staking is the most common way to get paid for waiting in crypto. You lock your tARC, and a reward accrues at a fixed rate every second. You can withdraw your principal and reward together whenever you like.
+      Staking is the most common way to get paid for waiting in crypto. You lock your USDC, and a reward accrues at a fixed rate every second. You can withdraw your principal and reward together whenever you like.
     </div>
   </div>
 
   <div class="usecase">
-    <b>Example scenario:</b> You have tARC sitting idle. You lock it into Staking, leave it for a few days or weeks, then withdraw both the principal and the reward it accrued together. You earn based on how long you held it; a simple, transparent, time-based yield model.
+    <b>Example scenario:</b> You have USDC sitting idle. You lock it into Staking, leave it for a few days or weeks, then withdraw both the principal and the reward it accrued together. You earn based on how long you held it; a simple, transparent, time-based yield model.
   </div>
 
   <div class="howcard">
-    <div class="howstep"><div class="num">01</div><div class="title">Lock</div><div class="desc">You deposit your tARC into the contract by staking.</div></div>
+    <div class="howstep"><div class="num">01</div><div class="title">Lock</div><div class="desc">You deposit your USDC into the contract by staking.</div></div>
     <div class="howstep"><div class="num">02</div><div class="title">Time accrues</div><div class="desc">Every second, a reward is added at a fixed rate.</div></div>
     <div class="howstep"><div class="num">03</div><div class="title">Withdraw</div><div class="desc">Take your principal + reward together whenever you like.</div></div>
   </div>
@@ -109,7 +109,7 @@
     <div class="head">Stake / Unstake</div>
     <div class="body">
       <div class="row">
-        <input type="number" id="stakeAmt" placeholder="Amount (tARC)" />
+        <input type="number" id="stakeAmt" placeholder="Amount (USDC)" />
         <button class="act primary" id="btnStake">Stake</button>
         <button class="act" id="btnUnstake">Unstake (all)</button>
       </div>
@@ -124,8 +124,8 @@
 
 <script>
 const ADDR = {
-  tARC:    "0xc59bD7aA02688Db21EaD5926998aE9B691E6811E",
-  Staking: "0x4AC964e24e7b02A5488A4AFF104b0b31C486aB93"
+  USDC:    "0x3600000000000000000000000000000000000000",
+  Staking: "0x35F2E254c71394f923B6Ac2Aead20beAf41573E5"
 };
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
@@ -139,7 +139,7 @@ const STAKING_ABI = [
   "function calculateReward(address) view returns (uint256)"
 ];
 
-let provider, signer, account, tARC, staking;
+let provider, signer, account, usdc, staking;
 
 function log(msg, type){
   const el = document.getElementById('log');
@@ -148,8 +148,8 @@ function log(msg, type){
   clearTimeout(window.__t);
   window.__t = setTimeout(()=>{ el.className=''; }, 6000);
 }
-function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 18)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
-function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 18); }
+function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 6)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
+function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 6); }
 
 async function connect(){
   if(!window.ethereum){ log("No wallet extension found (Rabby/MetaMask).", "err"); return; }
@@ -159,7 +159,7 @@ async function connect(){
     signer = provider.getSigner();
     account = await signer.getAddress();
     document.getElementById('acctInfo').textContent = account.slice(0,6) + "…" + account.slice(-4);
-    tARC = new ethers.Contract(ADDR.tARC, ERC20_ABI, signer);
+    usdc = new ethers.Contract(ADDR.USDC, ERC20_ABI, signer);
     staking = new ethers.Contract(ADDR.Staking, STAKING_ABI, signer);
     document.getElementById('connectBtn').textContent = "Connected";
     document.getElementById('connectBtn').disabled = true;
@@ -172,16 +172,16 @@ async function refreshStake(){
   try{
     const staked = await staking.stakedBalance(account);
     const reward = await staking.calculateReward(account);
-    document.getElementById('stStaked').textContent = fmt(staked) + " tARC";
-    document.getElementById('stReward').textContent = fmt(reward) + " tARC";
+    document.getElementById('stStaked').textContent = fmt(staked) + " USDC";
+    document.getElementById('stReward').textContent = fmt(reward) + " USDC";
   }catch(e){ console.error(e); }
 }
 
 async function ensureApproval(amountWei){
-  const allowance = await tARC.allowance(account, ADDR.Staking);
+  const allowance = await usdc.allowance(account, ADDR.Staking);
   if(allowance.lt(amountWei)){
     log("Requesting approval…");
-    const tx = await tARC.approve(ADDR.Staking, ethers.constants.MaxUint256);
+    const tx = await usdc.approve(ADDR.Staking, ethers.constants.MaxUint256);
     await tx.wait();
   }
 }
