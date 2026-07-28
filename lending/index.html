@@ -86,16 +86,16 @@
     <div class="eyebrow">StableLab · Lending Module</div>
     <h1>Get liquidity without selling your asset</h1>
     <div class="lede">
-      Lending lets you borrow by posting collateral, without selling your tARC. You can borrow instantly up to 66% of your collateral, and repay any time to withdraw it back.
+      Lending lets you borrow USDC by posting USDC or cirBTC as collateral, without selling your assets. You can borrow instantly up to 66% of your collateral's value, and repay any time to withdraw it back.
     </div>
   </div>
 
   <div class="usecase">
-    <b>Example scenario:</b> You have tARC but don't want to sell it (maybe you expect it to appreciate). You deposit it as collateral and borrow some amount against it; this way you keep your asset while getting the liquidity you need. When you repay your debt, your collateral comes back to you.
+    <b>Example scenario:</b> You hold cirBTC but don't want to sell it (maybe you expect it to appreciate). You deposit it as collateral and borrow USDC against it; this way you keep your Bitcoin exposure while getting the liquidity you need. When you repay your debt, your collateral comes back to you.
   </div>
 
   <div class="howcard">
-    <div class="howstep"><div class="num">01</div><div class="title">Deposit collateral</div><div class="desc">You lock your tARC into the contract as collateral.</div></div>
+    <div class="howstep"><div class="num">01</div><div class="title">Deposit collateral</div><div class="desc">You lock USDC or cirBTC into the contract as collateral.</div></div>
     <div class="howstep"><div class="num">02</div><div class="title">Borrow</div><div class="desc">You borrow instantly up to 66% of your collateral.</div></div>
     <div class="howstep"><div class="num">03</div><div class="title">Repay</div><div class="desc">You can close your debt whenever you like.</div></div>
     <div class="howstep"><div class="num">04</div><div class="title">Withdraw collateral</div><div class="desc">If you have no debt, you get your collateral back.</div></div>
@@ -110,12 +110,20 @@
     <div class="head">Manage Collateral</div>
     <div class="body">
       <div class="row">
-        <input type="number" id="collAmt" placeholder="Collateral amount (tARC)" />
-        <button class="act primary" id="btnDeposit">Deposit Collateral</button>
-        <button class="act" id="btnWithdraw">Withdraw Collateral</button>
+        <input type="number" id="collUsdcAmt" placeholder="USDC amount" />
+        <button class="act primary" id="btnDepositUsdc">Deposit USDC</button>
+        <button class="act" id="btnWithdrawUsdc">Withdraw USDC</button>
       </div>
-      <div class="stat-line"><span class="k">Your collateral balance</span><span class="v" id="lnColl">—</span></div>
+      <div class="row">
+        <input type="number" id="collBtcAmt" placeholder="cirBTC amount" />
+        <button class="act primary" id="btnDepositBtc">Deposit cirBTC</button>
+        <button class="act" id="btnWithdrawBtc">Withdraw cirBTC</button>
+      </div>
+      <div class="stat-line"><span class="k">Your USDC collateral</span><span class="v" id="lnCollUsdc">—</span></div>
+      <div class="stat-line"><span class="k">Your cirBTC collateral</span><span class="v" id="lnCollBtc">—</span></div>
+      <div class="stat-line"><span class="k">Total collateral value (USDC)</span><span class="v" id="lnCollValue">—</span></div>
       <div class="stat-line"><span class="k">Maximum you can borrow (66%)</span><span class="v" id="lnMax">—</span></div>
+      <div class="hint">cirBTC is valued at a fixed demo rate (1 cirBTC = 100,000 USDC) for this testnet, not a live price feed.</div>
     </div>
   </div>
 
@@ -123,7 +131,7 @@
     <div class="head">Manage Debt</div>
     <div class="body">
       <div class="row">
-        <input type="number" id="borrowAmt" placeholder="Amount (tARC)" />
+        <input type="number" id="borrowAmt" placeholder="Amount (USDC)" />
         <button class="act primary" id="btnBorrow">Borrow</button>
         <button class="act" id="btnRepay">Repay Debt</button>
       </div>
@@ -137,8 +145,9 @@
 
 <script>
 const ADDR = {
-  tARC:    "0xc59bD7aA02688Db21EaD5926998aE9B691E6811E",
-  Lending: "0xB110581094d615837b2F7ECf45ed75Bc2F083774"
+  USDC:    "0x3600000000000000000000000000000000000000",
+  cirBTC:  "0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF",
+  Lending: "0x7d1cb2D60523c557f1FcCd2ffa8FbADC00C1C1bC"
 };
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
@@ -146,26 +155,32 @@ const ERC20_ABI = [
   "function allowance(address owner, address spender) view returns (uint256)"
 ];
 const LENDING_ABI = [
-  "function depositCollateral(uint256 amount)",
-  "function withdrawCollateral(uint256 amount)",
+  "function depositCollateralUSDC(uint256 amount)",
+  "function depositCollateralBTC(uint256 amount)",
+  "function withdrawCollateralUSDC(uint256 amount)",
+  "function withdrawCollateralBTC(uint256 amount)",
   "function borrow(uint256 amount)",
   "function repay(uint256 amount)",
-  "function collateralBalance(address) view returns (uint256)",
+  "function collateralUSDC(address) view returns (uint256)",
+  "function collateralBTC(address) view returns (uint256)",
   "function borrowedBalance(address) view returns (uint256)",
-  "function COLLATERAL_FACTOR() view returns (uint256)"
+  "function collateralValueInUSDC(address) view returns (uint256)",
+  "function maxBorrow(address) view returns (uint256)"
 ];
 
-let provider, signer, account, tARC, lending;
+let provider, signer, account, usdc, cirBTC, lending;
 
 function log(msg, type){
   const el = document.getElementById('log');
   el.textContent = msg;
   el.className = 'show' + (type ? ' ' + type : '');
   clearTimeout(window.__t);
-  window.__t = setTimeout(()=>{ el.className=''; }, 6000);
+  window.__t = setTimeout(()=>{ el.className=''; }, 10000);
 }
-function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 18)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
-function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 18); }
+function fmt6(bn){ try{ return Number(ethers.utils.formatUnits(bn, 6)).toLocaleString('en-US', {maximumFractionDigits: 6}); }catch(e){ return "—"; } }
+function fmt8(bn){ try{ return Number(ethers.utils.formatUnits(bn, 8)).toLocaleString('en-US', {maximumFractionDigits: 8}); }catch(e){ return "—"; } }
+function toUsdc(v){ return ethers.utils.parseUnits(String(v || "0"), 6); }
+function toBtc(v){ return ethers.utils.parseUnits(String(v || "0"), 8); }
 
 async function connect(){
   if(!window.ethereum){ log("No wallet extension found (Rabby/MetaMask).", "err"); return; }
@@ -175,7 +190,8 @@ async function connect(){
     signer = provider.getSigner();
     account = await signer.getAddress();
     document.getElementById('acctInfo').textContent = account.slice(0,6) + "…" + account.slice(-4);
-    tARC = new ethers.Contract(ADDR.tARC, ERC20_ABI, signer);
+    usdc = new ethers.Contract(ADDR.USDC, ERC20_ABI, signer);
+    cirBTC = new ethers.Contract(ADDR.cirBTC, ERC20_ABI, signer);
     lending = new ethers.Contract(ADDR.Lending, LENDING_ABI, signer);
     document.getElementById('connectBtn').textContent = "Connected";
     document.getElementById('connectBtn').disabled = true;
@@ -186,47 +202,85 @@ async function connect(){
 async function refreshLending(){
   if(!account) return;
   try{
-    const coll = await lending.collateralBalance(account);
+    const collUsdc = await lending.collateralUSDC(account);
+    const collBtc = await lending.collateralBTC(account);
+    const collValue = await lending.collateralValueInUSDC(account);
     const borrowed = await lending.borrowedBalance(account);
-    const factor = await lending.COLLATERAL_FACTOR();
-    document.getElementById('lnColl').textContent = fmt(coll) + " tARC";
-    document.getElementById('lnBorrow').textContent = fmt(borrowed) + " tARC";
-    document.getElementById('lnMax').textContent = fmt(coll.mul(factor).div(100)) + " tARC";
+    const max = await lending.maxBorrow(account);
+    document.getElementById('lnCollUsdc').textContent = fmt6(collUsdc) + " USDC";
+    document.getElementById('lnCollBtc').textContent = fmt8(collBtc) + " cirBTC";
+    document.getElementById('lnCollValue').textContent = fmt6(collValue) + " USDC";
+    document.getElementById('lnBorrow').textContent = fmt6(borrowed) + " USDC";
+    document.getElementById('lnMax').textContent = fmt6(max) + " USDC";
   }catch(e){ console.error(e); }
 }
 
-async function ensureApproval(amountWei){
-  const allowance = await tARC.allowance(account, ADDR.Lending);
+async function ensureApprovalUSDC(amountWei){
+  const allowance = await usdc.allowance(account, ADDR.Lending);
   if(allowance.lt(amountWei)){
-    log("Requesting approval…");
-    const tx = await tARC.approve(ADDR.Lending, ethers.constants.MaxUint256);
+    log("Requesting USDC approval…");
+    const tx = await usdc.approve(ADDR.Lending, ethers.constants.MaxUint256);
+    await tx.wait();
+  }
+}
+async function ensureApprovalBTC(amountWei){
+  const allowance = await cirBTC.allowance(account, ADDR.Lending);
+  if(allowance.lt(amountWei)){
+    log("Requesting cirBTC approval…");
+    const tx = await cirBTC.approve(ADDR.Lending, ethers.constants.MaxUint256);
     await tx.wait();
   }
 }
 
-async function doDeposit(){
-  const amt = document.getElementById('collAmt').value;
+async function doDepositUsdc(){
+  const amt = document.getElementById('collUsdcAmt').value;
   if(!account){ log("Connect your wallet first.", "err"); return; }
   if(!amt || Number(amt) <= 0){ log("Enter a valid amount.", "err"); return; }
   try{
-    const wei = toWei(amt);
-    await ensureApproval(wei);
-    log("Depositing collateral…");
-    const tx = await lending.depositCollateral(wei);
+    const wei = toUsdc(amt);
+    await ensureApprovalUSDC(wei);
+    log("Depositing USDC collateral…");
+    const tx = await lending.depositCollateralUSDC(wei);
     await tx.wait();
-    log("Collateral deposited.", "ok");
+    log("USDC collateral deposited.", "ok");
     await refreshLending();
   }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
-async function doWithdraw(){
-  const amt = document.getElementById('collAmt').value;
+async function doWithdrawUsdc(){
+  const amt = document.getElementById('collUsdcAmt').value;
   if(!account){ log("Connect your wallet first.", "err"); return; }
   if(!amt || Number(amt) <= 0){ log("Enter a valid amount.", "err"); return; }
   try{
-    log("Withdrawing collateral…");
-    const tx = await lending.withdrawCollateral(toWei(amt));
+    log("Withdrawing USDC collateral…");
+    const tx = await lending.withdrawCollateralUSDC(toUsdc(amt));
     await tx.wait();
-    log("Collateral withdrawn.", "ok");
+    log("USDC collateral withdrawn.", "ok");
+    await refreshLending();
+  }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
+}
+async function doDepositBtc(){
+  const amt = document.getElementById('collBtcAmt').value;
+  if(!account){ log("Connect your wallet first.", "err"); return; }
+  if(!amt || Number(amt) <= 0){ log("Enter a valid amount.", "err"); return; }
+  try{
+    const wei = toBtc(amt);
+    await ensureApprovalBTC(wei);
+    log("Depositing cirBTC collateral…");
+    const tx = await lending.depositCollateralBTC(wei);
+    await tx.wait();
+    log("cirBTC collateral deposited.", "ok");
+    await refreshLending();
+  }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
+}
+async function doWithdrawBtc(){
+  const amt = document.getElementById('collBtcAmt').value;
+  if(!account){ log("Connect your wallet first.", "err"); return; }
+  if(!amt || Number(amt) <= 0){ log("Enter a valid amount.", "err"); return; }
+  try{
+    log("Withdrawing cirBTC collateral…");
+    const tx = await lending.withdrawCollateralBTC(toBtc(amt));
+    await tx.wait();
+    log("cirBTC collateral withdrawn.", "ok");
     await refreshLending();
   }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
@@ -236,7 +290,7 @@ async function doBorrow(){
   if(!amt || Number(amt) <= 0){ log("Enter a valid amount.", "err"); return; }
   try{
     log("Borrowing…");
-    const tx = await lending.borrow(toWei(amt));
+    const tx = await lending.borrow(toUsdc(amt));
     await tx.wait();
     log("Borrow successful.", "ok");
     await refreshLending();
@@ -247,8 +301,8 @@ async function doRepay(){
   if(!account){ log("Connect your wallet first.", "err"); return; }
   if(!amt || Number(amt) <= 0){ log("Enter a valid amount.", "err"); return; }
   try{
-    const wei = toWei(amt);
-    await ensureApproval(wei);
+    const wei = toUsdc(amt);
+    await ensureApprovalUSDC(wei);
     log("Repaying debt…");
     const tx = await lending.repay(wei);
     await tx.wait();
@@ -258,8 +312,10 @@ async function doRepay(){
 }
 
 document.getElementById('connectBtn').addEventListener('click', connect);
-document.getElementById('btnDeposit').addEventListener('click', doDeposit);
-document.getElementById('btnWithdraw').addEventListener('click', doWithdraw);
+document.getElementById('btnDepositUsdc').addEventListener('click', doDepositUsdc);
+document.getElementById('btnWithdrawUsdc').addEventListener('click', doWithdrawUsdc);
+document.getElementById('btnDepositBtc').addEventListener('click', doDepositBtc);
+document.getElementById('btnWithdrawBtc').addEventListener('click', doWithdrawBtc);
 document.getElementById('btnBorrow').addEventListener('click', doBorrow);
 document.getElementById('btnRepay').addEventListener('click', doRepay);
 setInterval(() => { if(account) refreshLending(); }, 20000);
