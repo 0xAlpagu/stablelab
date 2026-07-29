@@ -92,16 +92,16 @@
     <div class="eyebrow">StableLab · Swap Module</div>
     <h1>Instant swaps between two assets</h1>
     <div class="lede">
-      Swap lets you exchange between tARC and tUSD instantly through a decentralized pool. The price is calculated automatically based on the pool's ratios (the x·y=k formula); a small fee (0.3%) also lets liquidity providers earn.
+      Swap lets you exchange between USDC, EURC, and cirBTC instantly through decentralized pools. The price is calculated automatically based on the pool's ratios (the x·y=k formula); a small fee (0.3%) also lets liquidity providers earn.
     </div>
   </div>
 
   <div class="usecase">
-    <b>Example scenario:</b> You have tARC but need tUSD (or vice versa). Without going through an intermediary, you swap instantly, directly from the pool; the price is calculated transparently based on the pool's current ratio, and the transaction completes in seconds.
+    <b>Example scenario:</b> You have USDC but need EURC for a euro-denominated payment (or you want exposure to cirBTC). Without going through an intermediary, you swap instantly, directly from the pool; the price is calculated transparently based on the pool's current ratio, and the transaction completes in seconds.
   </div>
 
   <div class="howcard">
-    <div class="howstep"><div class="num">01</div><div class="title">Choose direction</div><div class="desc">tARC → tUSD or tUSD → tARC.</div></div>
+    <div class="howstep"><div class="num">01</div><div class="title">Choose a pool</div><div class="desc">USDC ↔ EURC or USDC ↔ cirBTC.</div></div>
     <div class="howstep"><div class="num">02</div><div class="title">Enter amount</div><div class="desc">Type how much you'll give, the counterpart is calculated automatically.</div></div>
     <div class="howstep"><div class="num">03</div><div class="title">Swap</div><div class="desc">The transaction happens instantly, the counterpart asset lands in your wallet.</div></div>
   </div>
@@ -111,20 +111,43 @@
     <div class="acct" id="acctInfo"></div>
   </div>
 
-  <div class="section">
-    <div class="head">Swap</div>
+  <div class="toggle" style="margin-bottom:16px;">
+    <button id="poolEURC" class="active">USDC ↔ EURC</button>
+    <button id="poolBTC">USDC ↔ cirBTC</button>
+  </div>
+
+  <div class="section" id="panelEURC">
+    <div class="head">Swap · USDC ↔ EURC</div>
     <div class="body">
       <div class="toggle">
-        <button id="dirAtoB" class="active">tARC → tUSD</button>
-        <button id="dirBtoA">tUSD → tARC</button>
+        <button id="dirUsdcToEurc" class="active">USDC → EURC</button>
+        <button id="dirEurcToUsdc">EURC → USDC</button>
       </div>
       <div class="row">
-        <input type="number" id="swapAmt" placeholder="Amount to give" />
-        <button class="act primary" id="btnSwap">Swap</button>
+        <input type="number" id="swapAmtEURC" placeholder="Amount to give" />
+        <button class="act primary" id="btnSwapEURC">Swap</button>
       </div>
-      <div class="stat-line"><span class="k">Amount you'll receive</span><span class="v" id="swapPreview">—</span></div>
-      <div class="stat-line"><span class="k">Pool tARC</span><span class="v" id="swReserveA">—</span></div>
-      <div class="stat-line"><span class="k">Pool tUSD</span><span class="v" id="swReserveB">—</span></div>
+      <div class="stat-line"><span class="k">Amount you'll receive</span><span class="v" id="swapPreviewEURC">—</span></div>
+      <div class="stat-line"><span class="k">Pool USDC</span><span class="v" id="swReserveUSDC1">—</span></div>
+      <div class="stat-line"><span class="k">Pool EURC</span><span class="v" id="swReserveEURC">—</span></div>
+      <div class="hint">Before swapping, spending approval for the relevant token is requested automatically.</div>
+    </div>
+  </div>
+
+  <div class="section" id="panelBTC" style="display:none;">
+    <div class="head">Swap · USDC ↔ cirBTC</div>
+    <div class="body">
+      <div class="toggle">
+        <button id="dirUsdcToBtc" class="active">USDC → cirBTC</button>
+        <button id="dirBtcToUsdc">cirBTC → USDC</button>
+      </div>
+      <div class="row">
+        <input type="number" id="swapAmtBTC" placeholder="Amount to give" />
+        <button class="act primary" id="btnSwapBTC">Swap</button>
+      </div>
+      <div class="stat-line"><span class="k">Amount you'll receive</span><span class="v" id="swapPreviewBTC">—</span></div>
+      <div class="stat-line"><span class="k">Pool USDC</span><span class="v" id="swReserveUSDC2">—</span></div>
+      <div class="stat-line"><span class="k">Pool cirBTC</span><span class="v" id="swReserveBTC">—</span></div>
       <div class="hint">Before swapping, spending approval for the relevant token is requested automatically.</div>
     </div>
   </div>
@@ -134,9 +157,10 @@
 
 <script>
 const ADDR = {
-  tARC: "0xc59bD7aA02688Db21EaD5926998aE9B691E6811E",
-  tUSD: "0xb0A5E94Ed394E60B40016c5952857ADBeF164BFD",
-  Swap: "0xAE022Cc4Ad777FcEca99746fF7383259470BE935"
+  USDC:  "0x3600000000000000000000000000000000000000",
+  EURC:  "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a",
+  cirBTC:"0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF",
+  Swap:  "0xA89e5413390C663bED9fc40D54507Cb3F8d52434"
 };
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
@@ -144,25 +168,33 @@ const ERC20_ABI = [
   "function allowance(address owner, address spender) view returns (uint256)"
 ];
 const SWAP_ABI = [
-  "function swapAforB(uint256 amountAIn)",
-  "function swapBforA(uint256 amountBIn)",
-  "function reserveA() view returns (uint256)",
-  "function reserveB() view returns (uint256)",
+  "function swapUSDCforEURC(uint256 amountIn)",
+  "function swapEURCforUSDC(uint256 amountIn)",
+  "function swapUSDCforBTC(uint256 amountIn)",
+  "function swapBTCforUSDC(uint256 amountIn)",
+  "function reserveUSDC_1() view returns (uint256)",
+  "function reserveEURC() view returns (uint256)",
+  "function reserveUSDC_2() view returns (uint256)",
+  "function reserveBTC() view returns (uint256)",
   "function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut) view returns (uint256)"
 ];
 
-let provider, signer, account, tARC, tUSD, swap;
-let swapDir = "AtoB";
+let provider, signer, account, usdc, eurc, cirBTC, swap;
+let dirEURC = "toEURC"; // "toEURC" | "toUSDC"
+let dirBTC = "toBTC";   // "toBTC" | "toUSDC"
 
 function log(msg, type){
   const el = document.getElementById('log');
   el.textContent = msg;
   el.className = 'show' + (type ? ' ' + type : '');
   clearTimeout(window.__t);
-  window.__t = setTimeout(()=>{ el.className=''; }, 6000);
+  window.__t = setTimeout(()=>{ el.className=''; }, 10000);
 }
-function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 18)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
-function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 18); }
+function fmt6(bn){ try{ return Number(ethers.utils.formatUnits(bn, 6)).toLocaleString('en-US', {maximumFractionDigits: 6}); }catch(e){ return "—"; } }
+function fmt8(bn){ try{ return Number(ethers.utils.formatUnits(bn, 8)).toLocaleString('en-US', {maximumFractionDigits: 8}); }catch(e){ return "—"; } }
+function toUsdc(v){ return ethers.utils.parseUnits(String(v || "0"), 6); }
+function toEurc(v){ return ethers.utils.parseUnits(String(v || "0"), 6); }
+function toBtc(v){ return ethers.utils.parseUnits(String(v || "0"), 8); }
 
 async function connect(){
   if(!window.ethereum){ log("No wallet extension found (Rabby/MetaMask).", "err"); return; }
@@ -172,8 +204,9 @@ async function connect(){
     signer = provider.getSigner();
     account = await signer.getAddress();
     document.getElementById('acctInfo').textContent = account.slice(0,6) + "…" + account.slice(-4);
-    tARC = new ethers.Contract(ADDR.tARC, ERC20_ABI, signer);
-    tUSD = new ethers.Contract(ADDR.tUSD, ERC20_ABI, signer);
+    usdc = new ethers.Contract(ADDR.USDC, ERC20_ABI, signer);
+    eurc = new ethers.Contract(ADDR.EURC, ERC20_ABI, signer);
+    cirBTC = new ethers.Contract(ADDR.cirBTC, ERC20_ABI, signer);
     swap = new ethers.Contract(ADDR.Swap, SWAP_ABI, signer);
     document.getElementById('connectBtn').textContent = "Connected";
     document.getElementById('connectBtn').disabled = true;
@@ -182,43 +215,60 @@ async function connect(){
 }
 
 async function refreshReserves(){
+  if(!swap) return;
   try{
-    const rA = await swap.reserveA();
-    const rB = await swap.reserveB();
-    document.getElementById('swReserveA').textContent = fmt(rA) + " tARC";
-    document.getElementById('swReserveB').textContent = fmt(rB) + " tUSD";
+    const r1 = await swap.reserveUSDC_1();
+    const rE = await swap.reserveEURC();
+    document.getElementById('swReserveUSDC1').textContent = fmt6(r1) + " USDC";
+    document.getElementById('swReserveEURC').textContent = fmt6(rE) + " EURC";
+    const r2 = await swap.reserveUSDC_2();
+    const rB = await swap.reserveBTC();
+    document.getElementById('swReserveUSDC2').textContent = fmt6(r2) + " USDC";
+    document.getElementById('swReserveBTC').textContent = fmt8(rB) + " cirBTC";
   }catch(e){ console.error(e); }
 }
 
-function setDir(dir){
-  swapDir = dir;
-  document.getElementById('dirAtoB').classList.toggle('active', dir === 'AtoB');
-  document.getElementById('dirBtoA').classList.toggle('active', dir === 'BtoA');
-  updatePreview();
+// ---------- Pool tab switching ----------
+document.getElementById('poolEURC').addEventListener('click', () => {
+  document.getElementById('poolEURC').classList.add('active');
+  document.getElementById('poolBTC').classList.remove('active');
+  document.getElementById('panelEURC').style.display = 'block';
+  document.getElementById('panelBTC').style.display = 'none';
+});
+document.getElementById('poolBTC').addEventListener('click', () => {
+  document.getElementById('poolBTC').classList.add('active');
+  document.getElementById('poolEURC').classList.remove('active');
+  document.getElementById('panelBTC').style.display = 'block';
+  document.getElementById('panelEURC').style.display = 'none';
+});
+
+// ---------- Pool 1: USDC <-> EURC ----------
+function setDirEURC(dir){
+  dirEURC = dir;
+  document.getElementById('dirUsdcToEurc').classList.toggle('active', dir === 'toEURC');
+  document.getElementById('dirEurcToUsdc').classList.toggle('active', dir === 'toUSDC');
+  updatePreviewEURC();
 }
-let previewTimer = null;
-function updatePreview(){
-  clearTimeout(previewTimer);
-  previewTimer = setTimeout(async () => {
-    const previewEl = document.getElementById('swapPreview');
-    const amt = document.getElementById('swapAmt').value;
+let previewTimerEURC = null;
+function updatePreviewEURC(){
+  clearTimeout(previewTimerEURC);
+  previewTimerEURC = setTimeout(async () => {
+    const previewEl = document.getElementById('swapPreviewEURC');
+    const amt = document.getElementById('swapAmtEURC').value;
     if(!swap || !amt || Number(amt) <= 0){ previewEl.textContent = "—"; return; }
     try{
-      const wei = toWei(amt);
-      const rA = await swap.reserveA();
-      const rB = await swap.reserveB();
-      let out;
-      if(swapDir === 'AtoB'){
-        out = await swap.getAmountOut(wei, rA, rB);
-        previewEl.textContent = "≈ " + fmt(out) + " tUSD";
+      const r1 = await swap.reserveUSDC_1();
+      const rE = await swap.reserveEURC();
+      if(dirEURC === 'toEURC'){
+        const out = await swap.getAmountOut(toUsdc(amt), r1, rE);
+        previewEl.textContent = "≈ " + fmt6(out) + " EURC";
       } else {
-        out = await swap.getAmountOut(wei, rB, rA);
-        previewEl.textContent = "≈ " + fmt(out) + " tARC";
+        const out = await swap.getAmountOut(toEurc(amt), rE, r1);
+        previewEl.textContent = "≈ " + fmt6(out) + " USDC";
       }
     }catch(e){ previewEl.textContent = "—"; }
   }, 400);
 }
-
 async function ensureApproval(token, spender, amountWei){
   const allowance = await token.allowance(account, spender);
   if(allowance.lt(amountWei)){
@@ -227,22 +277,72 @@ async function ensureApproval(token, spender, amountWei){
     await tx.wait();
   }
 }
-
-async function doSwap(){
-  const amt = document.getElementById('swapAmt').value;
+async function doSwapEURC(){
+  const amt = document.getElementById('swapAmtEURC').value;
   if(!account){ log("Connect your wallet first.", "err"); return; }
   if(!amt || Number(amt) <= 0){ log("Enter a valid amount.", "err"); return; }
   try{
-    const wei = toWei(amt);
-    if(swapDir === 'AtoB'){
-      await ensureApproval(tARC, ADDR.Swap, wei);
-      log("Sending swap (tARC → tUSD)…");
-      const tx = await swap.swapAforB(wei);
+    if(dirEURC === 'toEURC'){
+      const wei = toUsdc(amt);
+      await ensureApproval(usdc, ADDR.Swap, wei);
+      log("Sending swap (USDC → EURC)…");
+      const tx = await swap.swapUSDCforEURC(wei);
       await tx.wait();
     } else {
-      await ensureApproval(tUSD, ADDR.Swap, wei);
-      log("Sending swap (tUSD → tARC)…");
-      const tx = await swap.swapBforA(wei);
+      const wei = toEurc(amt);
+      await ensureApproval(eurc, ADDR.Swap, wei);
+      log("Sending swap (EURC → USDC)…");
+      const tx = await swap.swapEURCforUSDC(wei);
+      await tx.wait();
+    }
+    log("Swap successful.", "ok");
+    await refreshReserves();
+  }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
+}
+
+// ---------- Pool 2: USDC <-> cirBTC ----------
+function setDirBTC(dir){
+  dirBTC = dir;
+  document.getElementById('dirUsdcToBtc').classList.toggle('active', dir === 'toBTC');
+  document.getElementById('dirBtcToUsdc').classList.toggle('active', dir === 'toUSDC');
+  updatePreviewBTC();
+}
+let previewTimerBTC = null;
+function updatePreviewBTC(){
+  clearTimeout(previewTimerBTC);
+  previewTimerBTC = setTimeout(async () => {
+    const previewEl = document.getElementById('swapPreviewBTC');
+    const amt = document.getElementById('swapAmtBTC').value;
+    if(!swap || !amt || Number(amt) <= 0){ previewEl.textContent = "—"; return; }
+    try{
+      const r2 = await swap.reserveUSDC_2();
+      const rB = await swap.reserveBTC();
+      if(dirBTC === 'toBTC'){
+        const out = await swap.getAmountOut(toUsdc(amt), r2, rB);
+        previewEl.textContent = "≈ " + fmt8(out) + " cirBTC";
+      } else {
+        const out = await swap.getAmountOut(toBtc(amt), rB, r2);
+        previewEl.textContent = "≈ " + fmt6(out) + " USDC";
+      }
+    }catch(e){ previewEl.textContent = "—"; }
+  }, 400);
+}
+async function doSwapBTC(){
+  const amt = document.getElementById('swapAmtBTC').value;
+  if(!account){ log("Connect your wallet first.", "err"); return; }
+  if(!amt || Number(amt) <= 0){ log("Enter a valid amount.", "err"); return; }
+  try{
+    if(dirBTC === 'toBTC'){
+      const wei = toUsdc(amt);
+      await ensureApproval(usdc, ADDR.Swap, wei);
+      log("Sending swap (USDC → cirBTC)…");
+      const tx = await swap.swapUSDCforBTC(wei);
+      await tx.wait();
+    } else {
+      const wei = toBtc(amt);
+      await ensureApproval(cirBTC, ADDR.Swap, wei);
+      log("Sending swap (cirBTC → USDC)…");
+      const tx = await swap.swapBTCforUSDC(wei);
       await tx.wait();
     }
     log("Swap successful.", "ok");
@@ -251,10 +351,14 @@ async function doSwap(){
 }
 
 document.getElementById('connectBtn').addEventListener('click', connect);
-document.getElementById('btnSwap').addEventListener('click', doSwap);
-document.getElementById('dirAtoB').addEventListener('click', () => setDir('AtoB'));
-document.getElementById('dirBtoA').addEventListener('click', () => setDir('BtoA'));
-document.getElementById('swapAmt').addEventListener('input', updatePreview);
+document.getElementById('btnSwapEURC').addEventListener('click', doSwapEURC);
+document.getElementById('dirUsdcToEurc').addEventListener('click', () => setDirEURC('toEURC'));
+document.getElementById('dirEurcToUsdc').addEventListener('click', () => setDirEURC('toUSDC'));
+document.getElementById('swapAmtEURC').addEventListener('input', updatePreviewEURC);
+document.getElementById('btnSwapBTC').addEventListener('click', doSwapBTC);
+document.getElementById('dirUsdcToBtc').addEventListener('click', () => setDirBTC('toBTC'));
+document.getElementById('dirBtcToUsdc').addEventListener('click', () => setDirBTC('toUSDC'));
+document.getElementById('swapAmtBTC').addEventListener('input', updatePreviewBTC);
 setInterval(refreshReserves, 20000);
 
 /* ---------- Auto-reconnect ---------- */
