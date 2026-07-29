@@ -506,7 +506,7 @@
         </div>
         <button id="connectBtn" data-i18n="connect"></button>
         <button id="switchNetBtn" class="act" style="display:none;" data-i18n="switchNetBtn"></button>
-        <button id="btnClaim" class="act" data-i18n="claimBtn"></button>
+        <a id="btnClaim" class="act" href="https://faucet.circle.com/" target="_blank" rel="noopener" style="text-decoration:none; display:inline-block;" data-i18n="claimBtn"></a>
       </div>
       <div class="topbar-right-sub">
         <div class="acct" id="acctInfo"></div>
@@ -754,7 +754,7 @@ const I18N = {
     balArc: "tARC balance", balUsd: "tUSD balance", balStaked: "Staked", balReward: "Pending reward", refreshBtn: "Refresh", switchNetBtn: "Switch to Arc Testnet",
     faucetTitle: "Testnet Faucet", faucetDesc: "100 tARC + 100 tUSD per person, once every 24 hours",
     groupCore: "Core Tools", groupTreasury: "Treasury & Payment Tools", teaserLink: "Explore →", previewCore: "Staking · Lending · Swap", previewTreasury: "Payment Streaming · Escrow · Multi-sig Wallet",
-    claimBtn: "Get Test Tokens", claiming: "Requesting test tokens…", claimOk: "100 tARC + 100 tUSD sent to your wallet.",
+    claimBtn: "Get Test Tokens (Circle Faucet)", claiming: "Requesting test tokens…", claimOk: "100 tARC + 100 tUSD sent to your wallet.",
     claimWait: "Time until you can claim again: ", claimReady: "You can claim right now.",
     hoursShort: "h", minutesShort: "m",
     stakingTitle: "Staking", stakingDesc: "Lock tARC, earn reward per second",
@@ -1359,13 +1359,16 @@ function applyI18n(){
 const ADDR = {
   tARC:      "0xc59bD7aA02688Db21EaD5926998aE9B691E6811E",
   tUSD:      "0xb0A5E94Ed394E60B40016c5952857ADBeF164BFD",
-  Staking:   "0x4AC964e24e7b02A5488A4AFF104b0b31C486aB93",
-  Lending:   "0xB110581094d615837b2F7ECf45ed75Bc2F083774",
-  Swap:      "0xAE022Cc4Ad777FcEca99746fF7383259470BE935",
+  USDC:      "0x3600000000000000000000000000000000000000",
+  EURC:      "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a",
+  cirBTC:    "0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF",
+  Staking:   "0x35F2E254c71394f923B6Ac2Aead20beAf41573E5",
+  Lending:   "0x7d1cb2D60523c557f1FcCd2ffa8FbADC00C1C1bC",
+  Swap:      "0xA89e5413390C663bED9fc40D54507Cb3F8d52434",
   Faucet:    "0x9Fa05f0105CF1cba44493eAf67374a1F73dEc176",
-  Streaming: "0x1003e5DBf043A3BC5ca6A48fb54017B330065945",
-  Escrow:    "0xaD9115aA0d4BEbA4EBa3660623E2790122d12833",
-  MultiSig:  "0x57439F6a623eC8C4d56B286dB22e71b2a99DEA81",
+  Streaming: "0x3537D795Cfb04c65F477991aa1FB4979F1F544C6",
+  Escrow:    "0xAbe6B2B6515e270776d8e19FeBb8286058959249",
+  MultiSig:  "0x99F144C52dF54345775D98d487549FA2d88aBBa5",
   VeloPay:   "0x6345E4eb720D6fa8DC525A3dA5B3CEF60c13658D"
 };
 
@@ -1463,6 +1466,10 @@ function log(msg, type){
 }
 function fmt(bn){
   try{ return Number(ethers.utils.formatUnits(bn, 18)).toLocaleString(undefined, {maximumFractionDigits: 4}); }
+  catch(e){ return "—"; }
+}
+function fmt6(bn){
+  try{ return Number(ethers.utils.formatUnits(bn, 6)).toLocaleString(undefined, {maximumFractionDigits: 6}); }
   catch(e){ return "—"; }
 }
 function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 18); }
@@ -1578,8 +1585,8 @@ async function refreshAll(){
 
     if(bArc) document.getElementById('balARC').textContent = fmt(bArc);
     if(bUsd) document.getElementById('balUSD').textContent = fmt(bUsd);
-    if(staked) document.getElementById('balStaked').textContent = fmt(staked);
-    if(reward) document.getElementById('balReward').textContent = fmt(reward);
+    if(staked) document.getElementById('balStaked').textContent = fmt6(staked);
+    if(reward) document.getElementById('balReward').textContent = fmt6(reward);
   }catch(e){
     console.error(e);
   }
@@ -1593,19 +1600,10 @@ function fmtDuration(seconds){
   return h + I18N[LANG].hoursShort + " " + m + I18N[LANG].minutesShort;
 }
 async function refreshClaimStatus(){
-  if(!account || !faucet) return;
-  try{
-    const wait = await faucet.timeUntilNextClaim(account);
-    const statusEl = document.getElementById('claimStatus');
-    const btn = document.getElementById('btnClaim');
-    if(wait.eq(0)){
-      statusEl.textContent = I18N[LANG].claimReady;
-      btn.disabled = false;
-    } else {
-      statusEl.textContent = I18N[LANG].claimWait + fmtDuration(wait.toString());
-      btn.disabled = true;
-    }
-  }catch(e){ console.error(e); }
+  /* Kendi Faucet kontratımız artık gerçek USDC/EURC/cirBTC dağıtamıyor,
+     bu yüzden cooldown göstergesi kaldırıldı; "Get Test Tokens" artık
+     doğrudan Circle'ın resmi faucet'ine (faucet.circle.com) yönlendiriyor. */
+  return;
 }
 async function doClaim(){
   if(!account){ log(I18N[LANG].noWallet, "err"); return; }
@@ -1994,7 +1992,7 @@ async function doMsigConfirm(){
 document.getElementById('connectBtn').addEventListener('click', connect);
 document.getElementById('switchNetBtn').addEventListener('click', switchNetwork);
 document.getElementById('btnRefresh').addEventListener('click', () => { if(account){ refreshAll(); refreshClaimStatus(); } });
-document.getElementById('btnClaim').addEventListener('click', doClaim);
+/* btnClaim artık Circle'ın resmi faucet'ine giden gerçek bir link, JS tetikleyici gerekmiyor */
 
 /* ---------- Carousel ---------- */
 (function(){
