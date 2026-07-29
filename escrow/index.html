@@ -112,7 +112,7 @@
       <div class="row"><input type="text" id="escrowBeneficiary" placeholder="Beneficiary address (0x...)" /></div>
       <div class="row">
         <input type="text" id="escrowArbiter" placeholder="Arbiter address (0x...)" />
-        <input type="number" id="escrowAmount" placeholder="Amount (tARC)" />
+        <input type="number" id="escrowAmount" placeholder="Amount (USDC)" />
         <button class="act primary" id="btnCreateDeal">Create Deal</button>
       </div>
       <div class="hint">The amount gets locked; it waits until you or the arbiter releases or refunds it.</div>
@@ -138,8 +138,8 @@
 
 <script>
 const ADDR = {
-  tARC:   "0xc59bD7aA02688Db21EaD5926998aE9B691E6811E",
-  Escrow: "0xAbe6B2B6515e270776d8e19FeBb8286058959249"
+  USDC:   "0x3600000000000000000000000000000000000000",
+  Escrow: "0x8BBdE5DeA50C370b116efda19c2554BCF64Dac8c"
 };
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
@@ -154,7 +154,7 @@ const ESCROW_ABI = [
 ];
 const STATUS = ["Active", "Released", "Refunded"];
 
-let provider, signer, account, tARC, escrow;
+let provider, signer, account, usdc, escrow;
 
 function log(msg, type){
   const el = document.getElementById('log');
@@ -163,8 +163,8 @@ function log(msg, type){
   clearTimeout(window.__t);
   window.__t = setTimeout(()=>{ el.className=''; }, 10000);
 }
-function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 18)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
-function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 18); }
+function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 6)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
+function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 6); }
 
 async function connect(){
   if(!window.ethereum){ log("No wallet extension found (Rabby/MetaMask).", "err"); return; }
@@ -174,7 +174,7 @@ async function connect(){
     signer = provider.getSigner();
     account = await signer.getAddress();
     document.getElementById('acctInfo').textContent = account.slice(0,6) + "…" + account.slice(-4);
-    tARC = new ethers.Contract(ADDR.tARC, ERC20_ABI, signer);
+    usdc = new ethers.Contract(ADDR.USDC, ERC20_ABI, signer);
     escrow = new ethers.Contract(ADDR.Escrow, ESCROW_ABI, signer);
     document.getElementById('connectBtn').textContent = "Connected";
     document.getElementById('connectBtn').disabled = true;
@@ -182,10 +182,10 @@ async function connect(){
 }
 
 async function ensureApproval(amountWei){
-  const allowance = await tARC.allowance(account, ADDR.Escrow);
+  const allowance = await usdc.allowance(account, ADDR.Escrow);
   if(allowance.lt(amountWei)){
     log("Requesting approval…");
-    const tx = await tARC.approve(ADDR.Escrow, ethers.constants.MaxUint256);
+    const tx = await usdc.approve(ADDR.Escrow, ethers.constants.MaxUint256);
     await tx.wait();
   }
 }
@@ -228,7 +228,7 @@ async function doDealCheck(){
   if(id === "" || id === null){ log("Enter a Deal ID.", "err"); return; }
   try{
     const d = await escrow.getDeal(id);
-    document.getElementById('dealStatusVal').textContent = fmt(d[3]) + " tARC · " + STATUS[d[4]];
+    document.getElementById('dealStatusVal').textContent = fmt(d[3]) + " USDC · " + STATUS[d[4]];
   }catch(e){ log("Query failed: " + (e.reason || e.message || e), "err"); }
 }
 async function doDealRelease(){
