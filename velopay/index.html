@@ -102,11 +102,11 @@
   </div>
 
   <div class="flow-demo">
-    <div class="flow-step">Invoice issued<span class="big">100 tARC</span></div>
+    <div class="flow-step">Invoice issued<span class="big">100 USDC</span></div>
     <div class="flow-arrow">→</div>
-    <div class="flow-step">Paid instantly<span class="big">97 tARC</span></div>
+    <div class="flow-step">Paid instantly<span class="big">97 USDC</span></div>
     <div class="flow-arrow">→</div>
-    <div class="flow-step">Collected at due date<span class="big">100 tARC (+ late fee if any)</span></div>
+    <div class="flow-step">Collected at due date<span class="big">100 USDC (+ late fee if any)</span></div>
   </div>
 
   <div class="usecase">
@@ -129,10 +129,10 @@
     <div class="head">Add Liquidity to Pool</div>
     <div class="body">
       <div class="row">
-        <input type="number" id="veloLiqAmt" placeholder="Amount (tARC)" />
+        <input type="number" id="veloLiqAmt" placeholder="Amount (USDC)" />
         <button class="act primary" id="btnVeloAddLiq">Add Liquidity</button>
       </div>
-      <div class="hint">The tARC you add to the pool is used to fund invoices.</div>
+      <div class="hint">The USDC you add to the pool is used to fund invoices.</div>
     </div>
   </div>
 
@@ -143,7 +143,7 @@
         <input type="text" id="veloDebtor" placeholder="Debtor address (0x...)" />
       </div>
       <div class="row">
-        <input type="number" id="veloFaceValue" placeholder="Invoice amount (tARC)" />
+        <input type="number" id="veloFaceValue" placeholder="Invoice amount (USDC)" />
         <input type="number" id="veloDueDate" placeholder="Due date (Unix timestamp)" />
         <button class="act primary" id="btnCreateInvoice">Create Invoice</button>
       </div>
@@ -171,8 +171,8 @@
 
 <script>
 const ADDR = {
-  tARC:    "0xc59bD7aA02688Db21EaD5926998aE9B691E6811E",
-  VeloPay: "0x6345E4eb720D6fa8DC525A3dA5B3CEF60c13658D"
+  USDC:    "0x3600000000000000000000000000000000000000",
+  VeloPay: "0x7be5cE722405A1d965c8e8E81535B74Eb5D0Ef47"
 };
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
@@ -189,7 +189,7 @@ const VELOPAY_ABI = [
 ];
 const STATUS_LABELS = { repaid: "Repaid", defaulted: "Defaulted", open: "Open" };
 
-let provider, signer, account, tARC, velopay;
+let provider, signer, account, usdc, velopay;
 
 function log(msg, type){
   const el = document.getElementById('log');
@@ -198,8 +198,8 @@ function log(msg, type){
   clearTimeout(window.__t);
   window.__t = setTimeout(()=>{ el.className=''; }, 10000);
 }
-function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 18)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
-function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 18); }
+function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 6)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
+function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 6); }
 
 async function connect(){
   if(!window.ethereum){ log("No wallet extension found (Rabby/MetaMask).", "err"); return; }
@@ -209,7 +209,7 @@ async function connect(){
     signer = provider.getSigner();
     account = await signer.getAddress();
     document.getElementById('acctInfo').textContent = account.slice(0,6) + "…" + account.slice(-4);
-    tARC = new ethers.Contract(ADDR.tARC, ERC20_ABI, signer);
+    usdc = new ethers.Contract(ADDR.USDC, ERC20_ABI, signer);
     velopay = new ethers.Contract(ADDR.VeloPay, VELOPAY_ABI, signer);
     document.getElementById('connectBtn').textContent = "Connected";
     document.getElementById('connectBtn').disabled = true;
@@ -217,10 +217,10 @@ async function connect(){
 }
 
 async function ensureApproval(amountWei){
-  const allowance = await tARC.allowance(account, ADDR.VeloPay);
+  const allowance = await usdc.allowance(account, ADDR.VeloPay);
   if(allowance.lt(amountWei)){
     log("Requesting approval…");
-    const tx = await tARC.approve(ADDR.VeloPay, ethers.constants.MaxUint256);
+    const tx = await usdc.approve(ADDR.VeloPay, ethers.constants.MaxUint256);
     await tx.wait();
   }
 }
@@ -276,7 +276,7 @@ async function doVeloCheck(){
   if(id === "" || id === null){ log("Enter an Invoice ID.", "err"); return; }
   try{
     const due = await velopay.getAmountDue(id);
-    document.getElementById('veloAmountDue').textContent = fmt(due) + " tARC";
+    document.getElementById('veloAmountDue').textContent = fmt(due) + " USDC";
     const inv = await velopay.getInvoice(id);
     const repaid = inv[5], defaulted = inv[6];
     document.getElementById('veloStatus').textContent = defaulted ? STATUS_LABELS.defaulted : (repaid ? STATUS_LABELS.repaid : STATUS_LABELS.open);
