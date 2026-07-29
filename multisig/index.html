@@ -112,7 +112,7 @@
   </div>
 
   <div class="usecase">
-    <b>Example scenario:</b> You and two business partners set up a shared company vault (3 people, 2 approvals needed). No one can withdraw alone; someone proposes "send 500 tARC to this address", and once at least 2 people approve, the transaction executes automatically. Even if one person's wallet gets stolen, the money stays safe.
+    <b>Example scenario:</b> You and two business partners set up a shared company vault (3 people, 2 approvals needed). No one can withdraw alone; someone proposes "send 500 USDC to this address", and once at least 2 people approve, the transaction executes automatically. Even if one person's wallet gets stolen, the money stays safe.
   </div>
 
   <div class="howcard">
@@ -131,10 +131,10 @@
     <div class="head">Deposit to Vault</div>
     <div class="body">
       <div class="row">
-        <input type="number" id="msigDepositAmt" placeholder="Amount (tARC)" />
+        <input type="number" id="msigDepositAmt" placeholder="Amount (USDC)" />
         <button class="act primary" id="btnMsigDeposit">Deposit to Vault</button>
       </div>
-      <div class="hint">The tARC you deposit stays in the vault until a proposal is approved.</div>
+      <div class="hint">The USDC you deposit stays in the vault until a proposal is approved.</div>
     </div>
   </div>
 
@@ -143,7 +143,7 @@
     <div class="body">
       <div class="row">
         <input type="text" id="msigTo" placeholder="Recipient address (0x...)" />
-        <input type="number" id="msigAmount" placeholder="Amount (tARC)" />
+        <input type="number" id="msigAmount" placeholder="Amount (USDC)" />
         <button class="act primary" id="btnMsigPropose">Create Proposal</button>
       </div>
       <div class="hint">After creating a proposal, the required number of signers must confirm it.</div>
@@ -169,8 +169,8 @@
 
 <script>
 const ADDR = {
-  tARC:     "0xc59bD7aA02688Db21EaD5926998aE9B691E6811E",
-  MultiSig: "0x99F144C52dF54345775D98d487549FA2d88aBBa5"
+  USDC:     "0x3600000000000000000000000000000000000000",
+  MultiSig: "0xdb079Bf33820Ff818A9be0935Fc25e37f14f8061"
 };
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
@@ -185,7 +185,7 @@ const MULTISIG_ABI = [
   "function required() view returns (uint256)"
 ];
 
-let provider, signer, account, tARC, multisig;
+let provider, signer, account, usdc, multisig;
 
 function log(msg, type){
   const el = document.getElementById('log');
@@ -194,8 +194,8 @@ function log(msg, type){
   clearTimeout(window.__t);
   window.__t = setTimeout(()=>{ el.className=''; }, 10000);
 }
-function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 18)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
-function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 18); }
+function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 6)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
+function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 6); }
 
 async function connect(){
   if(!window.ethereum){ log("No wallet extension found (Rabby/MetaMask).", "err"); return; }
@@ -205,7 +205,7 @@ async function connect(){
     signer = provider.getSigner();
     account = await signer.getAddress();
     document.getElementById('acctInfo').textContent = account.slice(0,6) + "…" + account.slice(-4);
-    tARC = new ethers.Contract(ADDR.tARC, ERC20_ABI, signer);
+    usdc = new ethers.Contract(ADDR.USDC, ERC20_ABI, signer);
     multisig = new ethers.Contract(ADDR.MultiSig, MULTISIG_ABI, signer);
     document.getElementById('connectBtn').textContent = "Connected";
     document.getElementById('connectBtn').disabled = true;
@@ -213,10 +213,10 @@ async function connect(){
 }
 
 async function ensureApproval(amountWei){
-  const allowance = await tARC.allowance(account, ADDR.MultiSig);
+  const allowance = await usdc.allowance(account, ADDR.MultiSig);
   if(allowance.lt(amountWei)){
     log("Requesting approval…");
-    const tx = await tARC.approve(ADDR.MultiSig, ethers.constants.MaxUint256);
+    const tx = await usdc.approve(ADDR.MultiSig, ethers.constants.MaxUint256);
     await tx.wait();
   }
 }
@@ -272,7 +272,7 @@ async function doMsigCheck(){
     if(id !== "" && id !== null){
       const p = await multisig.proposals(id);
       document.getElementById('msigProposalVal').textContent =
-        p.to.slice(0,6) + "…" + p.to.slice(-4) + " · " + fmt(p.amount) + " tARC · " +
+        p.to.slice(0,6) + "…" + p.to.slice(-4) + " · " + fmt(p.amount) + " USDC · " +
         p.confirmations.toString() + "/" + req.toString() + (p.executed ? " ✓" : "");
     }
   }catch(e){ log("Query failed: " + (e.reason || e.message || e), "err"); }
