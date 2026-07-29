@@ -100,13 +100,13 @@
   </div>
 
   <div class="progress-demo">
-    <div class="lbl">Example: 1000 tARC flowing over 24 hours</div>
+    <div class="lbl">Example: 1000 USDC flowing over 24 hours</div>
     <div class="progress-track"><div class="progress-fill"></div></div>
-    <div class="progress-labels"><span>0 tARC</span><span>~380 tARC earned (after 9 hours)</span><span>1000 tARC</span></div>
+    <div class="progress-labels"><span>0 USDC</span><span>~380 USDC earned (after 9 hours)</span><span>1000 USDC</span></div>
   </div>
 
   <div class="usecase">
-    <b>Example scenario:</b> You pay a remote team member their monthly salary. Instead of waiting until month's end, you say "stream 3000 tARC over 30 days". If the employee needs it on day 15, they can withdraw the ~1500 tARC they've earned so far; you've effectively paid right on time, automatically. If they leave, you cancel and reclaim the portion that hasn't flowed yet.
+    <b>Example scenario:</b> You pay a remote team member their monthly salary. Instead of waiting until month's end, you say "stream 3000 USDC over 30 days". If the employee needs it on day 15, they can withdraw the ~1500 USDC they've earned so far; you've effectively paid right on time, automatically. If they leave, you cancel and reclaim the portion that hasn't flowed yet.
   </div>
 
   <div class="howcard">
@@ -126,11 +126,11 @@
     <div class="body">
       <div class="row"><input type="text" id="streamRecipient" placeholder="Recipient address (0x...)" /></div>
       <div class="row">
-        <input type="number" id="streamAmount" placeholder="Total amount (tARC)" />
+        <input type="number" id="streamAmount" placeholder="Total amount (USDC)" />
         <input type="number" id="streamDuration" placeholder="Duration (seconds)" />
         <button class="act primary" id="btnCreateStream">Start Stream</button>
       </div>
-      <div class="hint">Example: to stream 100 tARC over 3600 seconds, enter 3600 for duration.</div>
+      <div class="hint">Example: to stream 100 USDC over 3600 seconds, enter 3600 for duration.</div>
     </div>
   </div>
 
@@ -153,8 +153,8 @@
 
 <script>
 const ADDR = {
-  tARC:      "0xc59bD7aA02688Db21EaD5926998aE9B691E6811E",
-  Streaming: "0x3537D795Cfb04c65F477991aa1FB4979F1F544C6"
+  USDC:      "0x3600000000000000000000000000000000000000",
+  Streaming: "0x7e57100bb7e942Ee10F99aCbf0e6Fd282b220A3B"
 };
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
@@ -168,7 +168,7 @@ const STREAMING_ABI = [
   "function withdrawable(uint256 streamId) view returns (uint256)"
 ];
 
-let provider, signer, account, tARC, streaming;
+let provider, signer, account, usdc, streaming;
 
 function log(msg, type){
   const el = document.getElementById('log');
@@ -177,8 +177,8 @@ function log(msg, type){
   clearTimeout(window.__t);
   window.__t = setTimeout(()=>{ el.className=''; }, 10000);
 }
-function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 18)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
-function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 18); }
+function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 6)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
+function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 6); }
 
 async function connect(){
   if(!window.ethereum){ log("No wallet extension found (Rabby/MetaMask).", "err"); return; }
@@ -188,7 +188,7 @@ async function connect(){
     signer = provider.getSigner();
     account = await signer.getAddress();
     document.getElementById('acctInfo').textContent = account.slice(0,6) + "…" + account.slice(-4);
-    tARC = new ethers.Contract(ADDR.tARC, ERC20_ABI, signer);
+    usdc = new ethers.Contract(ADDR.USDC, ERC20_ABI, signer);
     streaming = new ethers.Contract(ADDR.Streaming, STREAMING_ABI, signer);
     document.getElementById('connectBtn').textContent = "Connected";
     document.getElementById('connectBtn').disabled = true;
@@ -196,10 +196,10 @@ async function connect(){
 }
 
 async function ensureApproval(amountWei){
-  const allowance = await tARC.allowance(account, ADDR.Streaming);
+  const allowance = await usdc.allowance(account, ADDR.Streaming);
   if(allowance.lt(amountWei)){
     log("Requesting approval…");
-    const tx = await tARC.approve(ADDR.Streaming, ethers.constants.MaxUint256);
+    const tx = await usdc.approve(ADDR.Streaming, ethers.constants.MaxUint256);
     await tx.wait();
   }
 }
@@ -242,7 +242,7 @@ async function doStreamCheck(){
   if(id === "" || id === null){ log("Enter a Stream ID.", "err"); return; }
   try{
     const w = await streaming.withdrawable(id);
-    document.getElementById('streamWithdrawable').textContent = fmt(w) + " tARC";
+    document.getElementById('streamWithdrawable').textContent = fmt(w) + " USDC";
   }catch(e){ log("Query failed: " + (e.reason || e.message || e), "err"); }
 }
 async function doStreamWithdraw(){
