@@ -94,6 +94,12 @@
   #log.show{display:block;}
   #log.err{background:var(--err);}
   #log.ok{background:var(--ok);}
+  .toggle{ display:flex; gap:6px; margin-bottom:16px; }
+  .toggle button{
+    font-family:var(--sans); font-size:12.5px; font-weight:700; background:var(--surface-alt); color:var(--text-mute);
+    border:1px solid var(--border); border-radius:20px; padding:8px 16px; cursor:pointer;
+  }
+  .toggle button.active{ background:var(--primary); color:#fff; border-color:var(--primary); }
 </style>
 </head>
 <body>
@@ -127,7 +133,12 @@
     <span class="hint" id="acctInfo"></span>
   </div>
 
-  <div class="section">
+  <div class="toggle">
+    <button id="tabCctp" class="active">Bridge (CCTP)</button>
+    <button id="tabUb">Unified Balance</button>
+  </div>
+
+  <div class="section" id="panelCctp">
     <div class="head">Bridge USDC to Arc</div>
     <div class="body">
       <div class="row">
@@ -144,6 +155,32 @@
       <div class="stat-line"><span class="k">Your USDC balance on selected chain</span><span class="v" id="sourceBalance">Connect wallet to check</span></div>
       <div class="hint">Your wallet must hold USDC on the source chain, plus its native gas token (e.g. Sepolia ETH) to pay for the burn transaction. Uses Circle's official App Kit SDK (CCTP v2 under the hood). Only chains with a fully verified name and contract address are listed above; more networks will be added here as they get verified.</div>
       <div class="steps-log" id="stepsLog"></div>
+    </div>
+  </div>
+
+  <div class="section" id="panelUb" style="display:none;">
+    <div class="head">Fund your Arc wallet via Unified Balance</div>
+    <div class="body">
+      <div class="hint" style="margin-top:0; margin-bottom:14px;">An alternative to CCTP bridging: deposit USDC from a source chain into Circle's Unified Balance, then send it directly to your Arc wallet. Useful if you want to combine USDC held across multiple chains into one spend.</div>
+      <div class="row">
+        <select id="ubSourceChain">
+          <option value="Base_Sepolia">Base Sepolia</option>
+          <option value="Ethereum_Sepolia">Ethereum Sepolia</option>
+          <option value="Arbitrum_Sepolia">Arbitrum Sepolia</option>
+          <option value="Avalanche_Fuji">Avalanche Fuji</option>
+          <option value="Unichain_Sepolia">Unichain Sepolia</option>
+        </select>
+        <input type="number" id="ubDepositAmt" placeholder="Amount (USDC)" />
+        <button class="act primary" id="btnUbDeposit">Deposit</button>
+      </div>
+      <div class="stat-line"><span class="k">Unified Balance (confirmed)</span><span class="v" id="ubConfirmed">—</span></div>
+      <div class="stat-line"><span class="k">Unified Balance (pending)</span><span class="v" id="ubPending">—</span></div>
+      <div class="row" style="margin-top:14px;">
+        <input type="number" id="ubSpendAmt" placeholder="Amount to send to my Arc wallet" />
+        <button class="act primary" id="btnUbSpend">Send to My Arc Wallet</button>
+      </div>
+      <div class="hint">Your wallet needs the native gas token on the source chain (e.g. Sepolia ETH) to pay for the deposit transaction.</div>
+      <div class="steps-log" id="ubStepsLog"></div>
     </div>
   </div>
 </div>
@@ -226,17 +263,19 @@ function log(msg, type){
   window.__t = setTimeout(()=>{ el.className=''; }, 10000);
 }
 
+let activeStepsContainer = 'stepsLog';
+
 function addStepRow(name){
   const row = document.createElement('div');
   row.className = 'step-row pending';
   row.dataset.step = name;
   row.innerHTML = '<span class="dot"></span><span class="name">' + name + '</span><span class="detail">in progress…</span>';
-  document.getElementById('stepsLog').appendChild(row);
+  document.getElementById(activeStepsContainer).appendChild(row);
   return row;
 }
 
 function updateStepRow(name, state, explorerUrl){
-  let row = document.querySelector('.step-row[data-step="' + name + '"]');
+  let row = document.querySelector('#' + activeStepsContainer + ' .step-row[data-step="' + name + '"]');
   if(!row) row = addStepRow(name);
   row.className = 'step-row ' + (state === 'success' ? 'success' : state === 'error' ? 'error' : 'pending');
   const detail = row.querySelector('.detail');
@@ -306,6 +345,7 @@ async function doBridge(){
   if(!adapter){ log("Connect your wallet first.", "err"); return; }
   if(!amount || Number(amount) <= 0){ log("Enter a valid amount.", "err"); return; }
 
+  activeStepsContainer = 'stepsLog';
   document.getElementById('stepsLog').innerHTML = '';
   document.getElementById('btnBridge').disabled = true;
 
@@ -340,6 +380,90 @@ async function doBridge(){
 document.getElementById('connectBtn').addEventListener('click', connect);
 document.getElementById('sourceChain').addEventListener('change', refreshSourceBalance);
 document.getElementById('btnBridge').addEventListener('click', doBridge);
+
+/* ---------- Tab switching ---------- */
+document.getElementById('tabCctp').addEventListener('click', () => {
+  document.getElementById('tabCctp').classList.add('active');
+  document.getElementById('tabUb').classList.remove('active');
+  document.getElementById('panelCctp').style.display = 'block';
+  document.getElementById('panelUb').style.display = 'none';
+});
+document.getElementById('tabUb').addEventListener('click', () => {
+  document.getElementById('tabUb').classList.add('active');
+  document.getElementById('tabCctp').classList.remove('active');
+  document.getElementById('panelUb').style.display = 'block';
+  document.getElementById('panelCctp').style.display = 'none';
+  ubRefreshBalance();
+});
+
+/* ---------- Unified Balance (reuses the same wallet connection as Bridge above) ---------- */
+async function ubRefreshBalance(){
+  if(!adapter) return;
+  try{
+    const balances = await kit.unifiedBalance.getBalances({
+      sources: [{ adapter }],
+      networkType: "testnet",
+      includePending: true,
+    });
+    document.getElementById('ubConfirmed').textContent = (balances.totalConfirmedBalance || "0") + " USDC";
+    document.getElementById('ubPending').textContent = (balances.totalPendingBalance || "0") + " USDC";
+  }catch(e){ console.error(e); }
+}
+
+async function ubDoDeposit(){
+  const chain = document.getElementById('ubSourceChain').value;
+  const amount = document.getElementById('ubDepositAmt').value;
+  if(!adapter){ log("Connect your wallet first.", "err"); return; }
+  if(!amount || Number(amount) <= 0){ log("Enter a valid amount.", "err"); return; }
+  activeStepsContainer = 'ubStepsLog';
+  document.getElementById('ubStepsLog').innerHTML = '';
+  document.getElementById('btnUbDeposit').disabled = true;
+  try{
+    log("Switching wallet network…");
+    await ensureWalletOnChain(chain);
+    log("Depositing into Unified Balance…");
+    const result = await kit.unifiedBalance.deposit({
+      from: { adapter, chain },
+      amount: String(amount),
+      token: "USDC",
+    });
+    console.log("Deposit result:", result);
+    log("Deposit submitted. It may take a moment to confirm.", "ok");
+    await ubRefreshBalance();
+  }catch(e){
+    log("Deposit failed: " + (e.message || e), "err");
+  } finally {
+    document.getElementById('btnUbDeposit').disabled = false;
+  }
+}
+
+async function ubDoSpend(){
+  const amount = document.getElementById('ubSpendAmt').value;
+  if(!adapter){ log("Connect your wallet first.", "err"); return; }
+  if(!amount || Number(amount) <= 0){ log("Enter a valid amount.", "err"); return; }
+  activeStepsContainer = 'ubStepsLog';
+  document.getElementById('ubStepsLog').innerHTML = '';
+  document.getElementById('btnUbSpend').disabled = true;
+  try{
+    log("Sending to your Arc wallet…");
+    const result = await kit.unifiedBalance.spend({
+      amount: String(amount),
+      token: "USDC",
+      from: [{ adapter }],
+      to: { adapter, chain: "Arc_Testnet", recipientAddress: connectedAddress },
+    });
+    console.log("Spend result:", result);
+    log("USDC sent to your Arc wallet!", "ok");
+    await ubRefreshBalance();
+  }catch(e){
+    log("Send failed: " + (e.message || e), "err");
+  } finally {
+    document.getElementById('btnUbSpend').disabled = false;
+  }
+}
+
+document.getElementById('btnUbDeposit').addEventListener('click', ubDoDeposit);
+document.getElementById('btnUbSpend').addEventListener('click', ubDoSpend);
 
 /* ---------- Auto-reconnect ---------- */
 (async function(){
