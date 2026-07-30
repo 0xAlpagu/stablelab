@@ -136,29 +136,13 @@
           <option value="Ethereum_Sepolia">Ethereum Sepolia</option>
           <option value="Arbitrum_Sepolia">Arbitrum Sepolia</option>
           <option value="Avalanche_Fuji">Avalanche Fuji</option>
-          <option value="OP_Sepolia">OP Sepolia</option>
-          <option value="Polygon_Amoy">Polygon Amoy</option>
           <option value="Unichain_Sepolia">Unichain Sepolia</option>
-          <option value="Linea_Sepolia">Linea Sepolia</option>
-          <option value="Sonic_Testnet">Sonic Testnet</option>
-          <option value="Sei_Testnet">Sei Testnet</option>
-          <option value="World_Chain_Sepolia">World Chain Sepolia</option>
-          <option value="Codex_Testnet">Codex Testnet</option>
-          <option value="Edge_Testnet">Edge Testnet</option>
-          <option value="HyperEVM_Testnet">HyperEVM Testnet</option>
-          <option value="Injective_Testnet">Injective Testnet</option>
-          <option value="Ink_Testnet">Ink Testnet</option>
-          <option value="Monad_Testnet">Monad Testnet</option>
-          <option value="Morph_Testnet">Morph Testnet</option>
-          <option value="Pharos_Atlantic">Pharos Atlantic</option>
-          <option value="Plume_Testnet">Plume Testnet</option>
-          <option value="XDC_Apothem">XDC Apothem</option>
         </select>
         <input type="number" id="bridgeAmt" placeholder="Amount (USDC)" />
         <button class="act primary" id="btnBridge">Bridge to Arc</button>
       </div>
       <div class="stat-line"><span class="k">Your USDC balance on selected chain</span><span class="v" id="sourceBalance">Connect wallet to check</span></div>
-      <div class="hint">Your wallet must hold USDC on the source chain, plus its native gas token (e.g. Sepolia ETH) to pay for the burn transaction. Uses Circle's official App Kit SDK (CCTP v2 under the hood). Note: some of the less common chains above are added based on Circle's published support list — if one fails to select, the browser console error will show the exact expected chain name.</div>
+      <div class="hint">Your wallet must hold USDC on the source chain, plus its native gas token (e.g. Sepolia ETH) to pay for the burn transaction. Uses Circle's official App Kit SDK (CCTP v2 under the hood). Only chains with a fully verified name and contract address are listed above; more networks will be added here as they get verified.</div>
       <div class="steps-log" id="stepsLog"></div>
     </div>
   </div>
@@ -182,6 +166,7 @@ const CHAIN_META = {
   Ethereum_Sepolia: { rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com", usdc: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" },
   Arbitrum_Sepolia: { rpcUrl: "https://sepolia-rollup.arbitrum.io/rpc", usdc: "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d" },
   Avalanche_Fuji:   { rpcUrl: "https://api.avax-test.network/ext/bc/C/rpc", usdc: "0x5425890298aed601595a70AB815c96711a31Bc65" },
+  Unichain_Sepolia: { rpcUrl: "https://sepolia.unichain.org", usdc: "0x31d0220469e10c4E71834a79b1f276d740d3768F" },
 };
 
 const ERC20_BALANCE_ABI = [
