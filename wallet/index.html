@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wallet · StableLab</title>
+<style>
+  :root{
+    --bg:#f5f7fa; --surface:#ffffff; --surface-alt:#eef2f8; --border:#dde3ec;
+    --text:#0f1b2d; --text-mute:#5b6b82; --text-faint:#8a97ab;
+    --primary:#2f5fe0; --primary-dark:#1e3fa8; --primary-soft:#e8edfc;
+    --ok:#0f9d58; --err:#d33b2c; --radius:10px;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: "SF Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--text); font-family:var(--sans); font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+  .wrap{max-width:640px;margin:0 auto;padding:24px 20px 80px;}
+  .brand-back{ display:inline-flex; align-items:baseline; gap:8px; text-decoration:none; margin-bottom:24px; }
+  .brand-back .logo{ font-family:var(--sans); font-weight:800; font-size:40px; color:var(--text); letter-spacing:-0.015em; }
+  .brand-back .logo .slash{ color:var(--primary); }
+  .brand-back .hint{ font-size:11px; color:var(--text-faint); font-weight:600; transition:color .15s; }
+  .brand-back:hover .hint{ color:var(--primary); }
+
+  .eyebrow{ font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--primary); margin-bottom:8px; }
+  h1{ font-size:30px; font-weight:800; margin:0 0 10px; letter-spacing:-0.02em; text-align:justify; }
+  .lede{ font-size:14.5px; color:var(--text-mute); line-height:1.65; margin-bottom:28px; text-align:justify; }
+
+  .usecase{
+    background:var(--primary-soft); border:1px solid #d3ddfa; border-radius:var(--radius);
+    padding:16px 20px; margin-bottom:28px; font-size:13px; color:#33447a; line-height:1.6;
+  }
+  .usecase b{ color:var(--primary-dark); }
+
+  .section{ border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); box-shadow:0 1px 2px rgba(15,27,45,0.04); margin-bottom:20px; }
+  .section .head{ padding:14px 20px; border-bottom:1px solid var(--border); background:var(--surface-alt); font-weight:700; font-size:14.5px; }
+  .body{ padding:20px; }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+  .row:last-child{margin-bottom:0;}
+  input[type=text], input[type=email]{
+    font-family:var(--sans); font-size:13.5px; background:var(--surface); border:1px solid var(--border);
+    border-radius:8px; padding:10px 13px; flex:1; min-width:140px; color:var(--text);
+  }
+  input:focus{ outline:none; border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-soft); }
+  .act{ font-family:var(--sans); font-size:12.5px; font-weight:600; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:9px 14px; cursor:pointer; }
+  .act:hover{ background:var(--surface-alt); border-color:var(--primary); }
+  .act.primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
+  .act.primary:hover{ background:var(--primary-dark); }
+  .act:disabled{ opacity:.55; cursor:not-allowed; }
+  .hint{ font-size:11.5px; color:var(--text-faint); margin-top:10px; }
+  .stat-line{ display:flex; justify-content:space-between; font-size:12.5px; padding:8px 0; border-bottom:1px solid var(--surface-alt); }
+  .stat-line:last-of-type{ border-bottom:none; }
+  .stat-line .k{ color:var(--text-mute); }
+  .stat-line .v{ font-weight:700; font-family:var(--mono); font-size:12px; }
+
+  #log{
+    position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
+    background:var(--text); color:#fff; border-radius:8px;
+    font-size:12.5px; padding:11px 20px; display:none; z-index:50;
+    box-shadow:0 4px 16px rgba(15,27,45,0.25); max-width:90vw;
+  }
+  #log.show{display:block;}
+  #log.err{background:var(--err);}
+  #log.ok{background:var(--ok);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand-back" href="../">
+    <span class="logo">Stable<span class="slash">Lab</span></span>
+    <span class="hint">← Click for homepage</span>
+  </a>
+
+  <div class="eyebrow">StableLab · Wallet</div>
+  <h1>No seed phrase. Just an email and a PIN.</h1>
+  <div class="lede">
+    Powered by Circle's Programmable Wallets: a secure, non-custodial embedded wallet you can create with nothing but an email address and a PIN. No browser extension, no seed phrase to write down.
+  </div>
+
+  <div class="usecase">
+    <b>Example scenario:</b> A friend wants to try StableLab but has never installed a crypto wallet before. Instead of walking them through MetaMask setup, they type their email here, set a 6-digit PIN, and get a real wallet in under a minute, secured by Circle's MPC infrastructure rather than a single private key on their device.
+  </div>
+
+  <div class="section">
+    <div class="head">Create Your Wallet</div>
+    <div class="body">
+      <div class="row">
+        <input type="text" id="userIdInput" placeholder="Choose a username (e.g. your email)" />
+        <button class="act primary" id="btnCreateWallet">Create Wallet</button>
+      </div>
+      <div class="stat-line"><span class="k">Status</span><span class="v" id="walletStatus">Not created</span></div>
+      <div class="hint">This uses Circle's official User-Controlled Wallets product. Your PIN and recovery details are handled entirely inside Circle's own secure interface, never by StableLab.</div>
+    </div>
+  </div>
+</div>
+
+<div id="log"></div>
+
+<script type="module">
+import { W3SSdk } from "https://esm.sh/@circle-fin/w3s-pw-web-sdk";
+
+const APP_ID = "bbd478e6-cd6c-5d48-924b-b5f29af26638";
+const API_BASE = ""; // same-origin: works when this page is served from stablelabs.vercel.app
+
+const sdk = new W3SSdk();
+sdk.setAppSettings({ appId: APP_ID });
+
+function log(msg, type){
+  const el = document.getElementById('log');
+  el.textContent = msg;
+  el.className = 'show' + (type ? ' ' + type : '');
+  clearTimeout(window.__t);
+  window.__t = setTimeout(()=>{ el.className=''; }, 10000);
+}
+
+async function createWallet(){
+  const userId = document.getElementById('userIdInput').value.trim();
+  if(!userId){ log("Enter a username first.", "err"); return; }
+
+  document.getElementById('btnCreateWallet').disabled = true;
+  document.getElementById('walletStatus').textContent = "Setting up…";
+
+  try{
+    log("Creating your Circle account…");
+    const userRes = await fetch(API_BASE + "/api/circle-create-user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId }),
+    });
+    const userData = await userRes.json();
+    if(!userRes.ok) throw new Error(userData.error || "Failed to create user");
+
+    sdk.setAuthentication({
+      userToken: userData.userToken,
+      encryptionKey: userData.encryptionKey,
+    });
+
+    log("Preparing wallet setup…");
+    const challengeRes = await fetch(API_BASE + "/api/circle-create-wallet", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userToken: userData.userToken }),
+    });
+    const challengeData = await challengeRes.json();
+    if(!challengeRes.ok) throw new Error(challengeData.error || "Failed to create challenge");
+
+    log("Opening Circle's secure setup…");
+    sdk.execute(challengeData.challengeId, (error, result) => {
+      if(error){
+        log("Setup failed: " + (error.message || "Unknown error"), "err");
+        document.getElementById('walletStatus').textContent = "Failed";
+        document.getElementById('btnCreateWallet').disabled = false;
+        return;
+      }
+      console.log("Wallet creation result:", result);
+      document.getElementById('walletStatus').textContent = "Wallet created!";
+      log("Wallet created successfully!", "ok");
+      document.getElementById('btnCreateWallet').disabled = false;
+    });
+  }catch(e){
+    log("Error: " + (e.message || e), "err");
+    document.getElementById('walletStatus').textContent = "Failed";
+    document.getElementById('btnCreateWallet').disabled = false;
+  }
+}
+
+document.getElementById('btnCreateWallet').addEventListener('click', createWallet);
+</script>
+</body>
+</html>
