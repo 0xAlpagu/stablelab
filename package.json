@@ -1,0 +1,9 @@
+{
+  "name": "stablelab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@circle-fin/user-controlled-wallets": "^9.2.0"
+  }
+}
