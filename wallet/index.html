@@ -98,13 +98,8 @@
 <div id="log"></div>
 
 <script type="module">
-import { W3SSdk } from "https://esm.sh/@circle-fin/w3s-pw-web-sdk";
-
 const APP_ID = "bbd478e6-cd6c-5d48-924b-b5f29af26638";
 const API_BASE = ""; // same-origin: works when this page is served from stablelabs.vercel.app
-
-const sdk = new W3SSdk();
-sdk.setAppSettings({ appId: APP_ID });
 
 function log(msg, type){
   const el = document.getElementById('log');
@@ -114,7 +109,24 @@ function log(msg, type){
   window.__t = setTimeout(()=>{ el.className=''; }, 10000);
 }
 
+let sdk = null;
+let sdkLoadError = null;
+try{
+  const { W3SSdk } = await import("https://esm.sh/@circle-fin/w3s-pw-web-sdk?bundle");
+  sdk = new W3SSdk();
+  sdk.setAppSettings({ appId: APP_ID });
+}catch(e){
+  sdkLoadError = e;
+  console.error("SDK failed to load:", e);
+}
+
+if(sdkLoadError){
+  document.getElementById('walletStatus').textContent = "SDK failed to load";
+  log("Wallet SDK could not be loaded: " + (sdkLoadError.message || sdkLoadError), "err");
+}
+
 async function createWallet(){
+  if(!sdk){ log("Wallet SDK is not available (failed to load). Check the browser console.", "err"); return; }
   const userId = document.getElementById('userIdInput').value.trim();
   if(!userId){ log("Enter a username first.", "err"); return; }
 
