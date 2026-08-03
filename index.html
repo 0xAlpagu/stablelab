@@ -477,6 +477,7 @@
             <a href="./lending/" data-i18n="lendingTitle"></a>
             <a href="./swap/" data-i18n="swapTitle"></a>
             <a href="./bridge/" data-i18n="bridgeTitle"></a>
+            <a href="./wallet/" data-i18n="walletTitle"></a>
           </div>
           <div class="mega-col">
             <a class="mega-col-title" href="./treasury/" data-i18n="groupTreasury"></a>
@@ -507,12 +508,14 @@
           </div>
         </div>
         <button id="connectBtn" data-i18n="connect"></button>
+        <button id="disconnectBtn" class="act" style="display:none;">Disconnect</button>
         <button id="switchNetBtn" class="act" style="display:none;" data-i18n="switchNetBtn"></button>
         <a id="btnClaim" class="act" href="https://faucet.circle.com/" target="_blank" rel="noopener" style="text-decoration:none; display:inline-block;" data-i18n="claimBtn"></a>
       </div>
       <div class="topbar-right-sub">
         <div class="acct" id="acctInfo"></div>
         <span class="hint" id="claimStatus"></span>
+        <span class="hint" id="walletHint">No wallet? <a href="./wallet/" style="color:var(--primary); font-weight:600; text-decoration:none;">Create one with Circle →</a></span>
       </div>
     </div>
   </nav>
@@ -574,7 +577,7 @@
 
   <footer>
     <span>Arc Network Testnet · Chain ID <code>5042002</code></span>
-    <span>tARC <code>0xc59b…6811E</code> · tUSD <code>0xb0A5…4BFD</code> · Staking <code>0x4AC9…AB93</code> · Lending <code>0xB110…3774</code> · Swap <code>0x8d6A…9613</code></span>
+    <span>USDC <code>0x3600…0000</code> · EURC <code>0x89B5…D72a</code> · cirBTC <code>0xf0C4…32BF</code> · Staking <code>0x35F2…73E5</code> · Lending <code>0x7d1c…C1bC</code> · Swap <code>0xA89e…5434</code></span>
   </footer>
 
 </div>
@@ -694,16 +697,16 @@ const I18N = {
     tag: "Built on Stablecoin Rails, End to End · Arc Testnet",
     aboutTitle: "About StableLab",
 
-    c0eyebrow: "STAKING", c0headline: "Lock your tARC, earn reward every second.",
+    c0eyebrow: "STAKING", c0headline: "Lock your USDC, earn reward every second.",
     c1eyebrow: "LENDING", c1headline: "Get instant liquidity against your collateral.",
     c2eyebrow: "SWAP", c2headline: "Swap between assets, instantly and transparently.",
     c3eyebrow: "FLOWPAY", c3headline: "Stream your company's payroll onchain.",
     c4eyebrow: "TRUSTLOCK", c4headline: "Secure conditional transfers, without the dispute risk.",
     c5eyebrow: "VAULTGUARD", c5headline: "Wallet security tied to your team, not one person.",
     c6eyebrow: "VELOPAY", c6headline: "Don't wait on your invoice · cash it in today.",
-    c0desc: "Deposit your tARC and earn a steady, predictable reward every second it's locked. No lockup periods, no complexity: withdraw your principal and reward together whenever you like.",
-    c1desc: "Post your tARC as collateral and borrow up to 66% of its value instantly, without selling. Repay any time to unlock your collateral again.",
-    c2desc: "Trade tARC and tUSD instantly through a liquidity pool, with prices set transparently by the pool's own reserves. A small 0.3% fee rewards the people supplying that liquidity.",
+    c0desc: "Deposit your USDC and earn a steady, predictable reward every second it's locked. No lockup periods, no complexity: withdraw your principal and reward together whenever you like.",
+    c1desc: "Post your USDC or cirBTC as collateral and borrow USDC up to 66% of its value instantly, without selling. Repay any time to unlock your collateral again.",
+    c2desc: "Trade USDC, EURC, and cirBTC instantly through liquidity pools, with prices set transparently by the pool's own reserves. A small 0.3% fee rewards the people supplying that liquidity.",
     c3desc: "Pay salaries, retainers, or subscriptions as a continuous flow instead of a lump sum. The recipient can withdraw what they've earned at any moment.",
     c4desc: "Lock funds for a deal and only release them once the agreed condition is met. An arbiter can step in and resolve disputes fairly if the two sides don't agree.",
     c5desc: "Require multiple approvals before any fund leaves a shared vault. A single compromised signer can never move money alone.",
@@ -742,6 +745,7 @@ const I18N = {
     msigTitle: "VaultGuard", msigDesc: "Known in finance as 'Treasury Management' · we designed VaultGuard for this",
     veloTitle: "VeloPay", veloDesc: "Known in finance as 'Invoice Factoring' · we designed VeloPay for this",
     bridgeTitle: "Bridge",
+    walletTitle: "Wallet",
     proposeBtn: "Create Proposal", proposalId: "Proposal ID", confirmBtn: "Confirm",
     msigRequired: "Required confirmations", msigProposalInfo: "Proposal info",
     msigHint: "First deposit into the vault, then propose a transfer · it executes automatically once enough confirmations are collected.",
@@ -1562,6 +1566,8 @@ async function connect(){
     document.getElementById('connectBtn').textContent = I18N[LANG].connected;
     document.getElementById('connectBtn').disabled = true;
     document.getElementById('accountMenu').style.display = 'inline-block';
+    document.getElementById('disconnectBtn').style.display = 'inline-block';
+    document.getElementById('walletHint').style.display = 'none';
 
     await refreshAll();
     await new Promise(r => setTimeout(r, 500));
@@ -2001,7 +2007,18 @@ async function doMsigConfirm(){
 }
 
 /* ---------- Events ---------- */
+function disconnect(){
+  provider = null; signer = null; account = null;
+  document.getElementById('connectBtn').textContent = I18N[LANG].connect;
+  document.getElementById('connectBtn').disabled = false;
+  document.getElementById('disconnectBtn').style.display = 'none';
+  document.getElementById('accountMenu').style.display = 'none';
+  document.getElementById('walletHint').style.display = 'inline';
+  document.getElementById('acctInfo').textContent = '';
+  log("Wallet disconnected.", "ok");
+}
 document.getElementById('connectBtn').addEventListener('click', connect);
+document.getElementById('disconnectBtn').addEventListener('click', disconnect);
 document.getElementById('switchNetBtn').addEventListener('click', switchNetwork);
 document.getElementById('btnRefresh').addEventListener('click', () => { if(account){ refreshAll(); refreshClaimStatus(); } });
 /* btnClaim artık Circle'ın resmi faucet'ine giden gerçek bir link, JS tetikleyici gerekmiyor */
@@ -2081,7 +2098,8 @@ document.querySelectorAll('.group-menu').forEach(menu => {
     { icon: "🔒", name: "TrustLock", href: "./escrow/" },
     { icon: "🛡️", name: "VaultGuard", href: "./multisig/" },
     { icon: "🧾", name: "VeloPay", href: "./velopay/" },
-    { icon: "🌉", name: "Bridge", href: "./bridge/" }
+    { icon: "🌉", name: "Bridge", href: "./bridge/" },
+    { icon: "🔑", name: "Wallet", href: "./wallet/" }
   ];
   const html = items.map(it => `<a class="marquee-item" href="${it.href}"><span class="mq-icon">${it.icon}</span>${it.name}</a>`).join('');
   track.innerHTML = html + html;
@@ -2117,14 +2135,16 @@ window.addEventListener('resize', stretchLogo);
   if(!toggle || !panel) return;
 
   const KB = [
-    { kw:['staking','stake'], text:"Staking lets you lock your tARC and earn a steady reward every second it's locked. No lockup periods — withdraw your principal and reward together whenever you like.", href:'./staking/', label:'Open Staking' },
-    { kw:['lending','lend','borrow','collateral'], text:"Lending lets you post tARC as collateral and borrow up to 66% of its value instantly, without selling. Repay any time to unlock your collateral.", href:'./lending/', label:'Open Lending' },
-    { kw:['swap','exchange','trade'], text:"Swap lets you trade tARC and tUSD instantly through a liquidity pool, with prices set transparently by the pool's own reserves.", href:'./swap/', label:'Open Swap' },
+    { kw:['staking','stake'], text:"Staking lets you lock your USDC and earn a steady reward every second it's locked. No lockup periods — withdraw your principal and reward together whenever you like.", href:'./staking/', label:'Open Staking' },
+    { kw:['lending','lend','borrow','collateral'], text:"Lending lets you post USDC or cirBTC as collateral and borrow USDC up to 66% of its value instantly, without selling. Repay any time to unlock your collateral.", href:'./lending/', label:'Open Lending' },
+    { kw:['swap','exchange','trade'], text:"Swap lets you trade USDC, EURC, and cirBTC instantly through liquidity pools, with prices set transparently by the pool's own reserves.", href:'./swap/', label:'Open Swap' },
     { kw:['flowpay','streaming','payroll','salary','salaries'], text:"FlowPay lets you pay salaries or subscriptions as a continuous flow instead of a lump sum. Recipients can withdraw what they've earned at any moment.", href:'./streaming/', label:'Open FlowPay' },
     { kw:['trustlock','escrow','arbiter','dispute'], text:"TrustLock locks funds for a deal and only releases them once the agreed condition is met. An arbiter can resolve disputes fairly if the two sides don't agree.", href:'./escrow/', label:'Open TrustLock' },
     { kw:['vaultguard','multisig','multi-sig','vault','signer'], text:"VaultGuard requires multiple approvals before any fund leaves a shared vault. A single compromised signer can never move money alone.", href:'./multisig/', label:'Open VaultGuard' },
-    { kw:['velopay','invoice','factoring','freelanc'], text:"VeloPay lets you upload an unpaid invoice and receive 90%+ of its value in your wallet within seconds, instead of waiting 30-60 days for your client to pay.", href:'./velopay/', label:'Open VeloPay' },
-    { kw:['faucet','test token','free token','get token'], text:"You can claim free test tokens (tARC + tUSD) using the \"Get Test Tokens\" button at the top of the page — once every 24 hours." },
+    { kw:['velopay','invoice','factoring','freelanc'], text:"VeloPay lets you upload an unpaid invoice and receive 97% of its value in your wallet within seconds, instead of waiting 30-60 days for your client to pay.", href:'./velopay/', label:'Open VeloPay' },
+    { kw:['faucet','test token','free token','get token'], text:"You can claim free testnet USDC, EURC, and cirBTC directly from Circle's official faucet using the \"Get Test Tokens\" button at the top of the page." },
+    { kw:['bridge','cctp','cross-chain','crosschain'], text:"Bridge lets you bring USDC to Arc from another testnet chain using Circle's CCTP, or combine balances across chains with Circle's Unified Balance.", href:'./bridge/', label:'Open Bridge' },
+    { kw:['circle wallet','embedded wallet','no wallet','create wallet','email wallet'], text:"Don't have a crypto wallet yet? Create one instantly with just an email and a PIN, powered by Circle's Programmable Wallets.", href:'./wallet/', label:'Open Wallet' },
     { kw:['price','pricing','fee','cost','commission'], text:"Core tools (Staking, Lending, Swap) are completely free. Treasury tools charge a small, transparent platform fee — see the details on the Pricing page.", href:'./pricing/', label:'Open Pricing' },
     { kw:['about','who made','story','who built','who are you'], text:"StableLab is an independent, open-source experiment built from scratch on Arc Network. Read the full story on the About page.", href:'./about/', label:'Open About' },
     { kw:['contact','reach','discord','twitter','x.com'], text:"You can reach out via X, Discord, or GitHub — all listed on the Contact page.", href:'./contact/', label:'Open Contact' },
