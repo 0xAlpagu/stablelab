@@ -144,16 +144,12 @@
       <div class="row">
         <select id="sourceChain">
           <option value="Base_Sepolia">Base Sepolia</option>
-          <option value="Ethereum_Sepolia">Ethereum Sepolia</option>
-          <option value="Arbitrum_Sepolia">Arbitrum Sepolia</option>
-          <option value="Avalanche_Fuji">Avalanche Fuji</option>
-          <option value="Unichain_Sepolia">Unichain Sepolia</option>
         </select>
         <input type="number" id="bridgeAmt" placeholder="Amount (USDC)" />
         <button class="act primary" id="btnBridge">Bridge to Arc</button>
       </div>
       <div class="stat-line"><span class="k">Your USDC balance on selected chain</span><span class="v" id="sourceBalance">Connect wallet to check</span></div>
-      <div class="hint">Your wallet must hold USDC on the source chain, plus its native gas token (e.g. Sepolia ETH) to pay for the burn transaction. Uses Circle's official App Kit SDK (CCTP v2 under the hood). Only chains with a fully verified name and contract address are listed above; more networks will be added here as they get verified.</div>
+      <div class="hint">Your wallet must hold USDC on the source chain, plus its native gas token (e.g. Sepolia ETH) to pay for the burn transaction. Uses Circle's official App Kit SDK (CCTP v2 under the hood). The chain list above is pulled live from Circle's SDK, so it stays current automatically. Balance preview below is only available for a handful of common chains; bridging itself works on all chains listed.</div>
       <div class="steps-log" id="stepsLog"></div>
     </div>
   </div>
@@ -165,10 +161,6 @@
       <div class="row">
         <select id="ubSourceChain">
           <option value="Base_Sepolia">Base Sepolia</option>
-          <option value="Ethereum_Sepolia">Ethereum Sepolia</option>
-          <option value="Arbitrum_Sepolia">Arbitrum Sepolia</option>
-          <option value="Avalanche_Fuji">Avalanche Fuji</option>
-          <option value="Unichain_Sepolia">Unichain Sepolia</option>
         </select>
         <input type="number" id="ubDepositAmt" placeholder="Amount (USDC)" />
         <button class="act primary" id="btnUbDeposit">Deposit</button>
@@ -193,6 +185,65 @@ import { createViemAdapterFromProvider } from "https://esm.sh/@circle-fin/adapte
 import { createPublicClient, http, formatUnits } from "https://esm.sh/viem";
 
 const kit = new AppKit();
+
+function populateSourceChains(){
+  try{
+    const chains = kit.getSupportedChains("bridge");
+    const select = document.getElementById('sourceChain');
+    select.innerHTML = '';
+    const evmTestnets = chains.filter(c =>
+      c.isTestnet &&
+      c.name !== "Arc Testnet" &&
+      c.type !== "solana" &&
+      !/solana/i.test(c.name)
+    );
+    evmTestnets.sort((a, b) => a.name.localeCompare(b.name));
+    for(const c of evmTestnets){
+      const opt = document.createElement('option');
+      opt.value = c.name.replace(/\s+/g, '_');
+      opt.textContent = c.name;
+      select.appendChild(opt);
+    }
+    if(evmTestnets.length === 0){
+      const opt = document.createElement('option');
+      opt.value = "Base_Sepolia";
+      opt.textContent = "Base Sepolia";
+      select.appendChild(opt);
+    }
+  }catch(e){
+    console.error("Could not load supported chains from SDK:", e);
+  }
+}
+function populateUbSourceChains(){
+  try{
+    const chains = kit.getSupportedChains("unifiedBalance");
+    const select = document.getElementById('ubSourceChain');
+    select.innerHTML = '';
+    const evmTestnets = chains.filter(c =>
+      c.isTestnet &&
+      c.name !== "Arc Testnet" &&
+      c.type !== "solana" &&
+      !/solana/i.test(c.name)
+    );
+    evmTestnets.sort((a, b) => a.name.localeCompare(b.name));
+    for(const c of evmTestnets){
+      const opt = document.createElement('option');
+      opt.value = c.name.replace(/\s+/g, '_');
+      opt.textContent = c.name;
+      select.appendChild(opt);
+    }
+    if(evmTestnets.length === 0){
+      const opt = document.createElement('option');
+      opt.value = "Base_Sepolia";
+      opt.textContent = "Base Sepolia";
+      select.appendChild(opt);
+    }
+  }catch(e){
+    console.error("Could not load Unified Balance supported chains:", e);
+  }
+}
+populateSourceChains();
+populateUbSourceChains();
 let adapter = null;
 let connectedAddress = null;
 let walletProvider = null;
