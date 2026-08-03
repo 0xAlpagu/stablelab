@@ -112,7 +112,7 @@ function log(msg, type){
 let sdk = null;
 let sdkLoadError = null;
 try{
-  const { W3SSdk } = await import("https://esm.sh/@circle-fin/w3s-pw-web-sdk?bundle");
+  const { W3SSdk } = await import("https://cdn.jsdelivr.net/npm/@circle-fin/w3s-pw-web-sdk/+esm");
   sdk = new W3SSdk();
   sdk.setAppSettings({ appId: APP_ID });
 }catch(e){
