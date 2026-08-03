@@ -68,6 +68,9 @@
   .act.primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
   .act.primary:hover{ background:var(--primary-dark); }
   .hint{ font-size:11.5px; color:var(--text-faint); margin-top:10px; }
+  .hint a{ color:var(--primary); font-weight:600; text-decoration:none; }
+  .hint a:hover{ text-decoration:underline; }
+  #walletHint{ margin-top:8px; }
   .stat-line{ display:flex; justify-content:space-between; font-size:12.5px; padding:8px 0; border-bottom:1px solid var(--surface-alt); }
   .stat-line:last-of-type{ border-bottom:none; }
   .stat-line .k{ color:var(--text-mute); }
@@ -118,7 +121,9 @@
 
   <div style="margin-bottom:24px;">
     <button id="connectBtn">Connect Wallet</button>
+    <button id="disconnectBtn" class="act" style="display:none;">Disconnect</button>
     <div class="acct" id="acctInfo"></div>
+    <div class="hint" id="walletHint">Already have a wallet? Connect it above. Don't have one yet? <a href="../wallet/">Create a Circle Wallet →</a></div>
   </div>
 
   <div class="section">
@@ -192,7 +197,19 @@ async function connect(){
     streaming = new ethers.Contract(ADDR.Streaming, STREAMING_ABI, signer);
     document.getElementById('connectBtn').textContent = "Connected";
     document.getElementById('connectBtn').disabled = true;
+    document.getElementById('disconnectBtn').style.display = 'inline-block';
+    document.getElementById('walletHint').style.display = 'none';
   }catch(e){ log("Connection error: " + (e.message || e), "err"); }
+}
+
+function disconnect(){
+  provider = null; signer = null; account = null; usdc = null; streaming = null;
+  document.getElementById('connectBtn').textContent = "Connect Wallet";
+  document.getElementById('connectBtn').disabled = false;
+  document.getElementById('disconnectBtn').style.display = 'none';
+  document.getElementById('acctInfo').textContent = '';
+  document.getElementById('walletHint').style.display = 'block';
+  log("Wallet disconnected.", "ok");
 }
 
 async function ensureApproval(amountWei){
@@ -269,6 +286,7 @@ async function doStreamCancel(){
 }
 
 document.getElementById('connectBtn').addEventListener('click', connect);
+document.getElementById('disconnectBtn').addEventListener('click', disconnect);
 document.getElementById('btnCreateStream').addEventListener('click', doCreateStream);
 document.getElementById('btnStreamCheck').addEventListener('click', doStreamCheck);
 document.getElementById('btnStreamWithdraw').addEventListener('click', doStreamWithdraw);
