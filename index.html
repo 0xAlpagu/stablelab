@@ -409,13 +409,40 @@
   }
   .topbar-link:hover{ color:var(--primary); }
   .topbar-right{ display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex-wrap:nowrap; flex-shrink:0; padding-top:6px; }
-  .topbar-right-top{ display:flex; align-items:center; gap:8px; flex-wrap:nowrap; }
+  .topbar-right-top{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; max-width:320px; }
   .topbar-right-sub{
-    display:flex; justify-content:flex-end; gap:12px; min-height:14px;
+    display:flex; justify-content:flex-end; gap:12px; min-height:14px; flex-wrap:wrap; max-width:280px;
   }
+  #walletHint{ flex-basis:100%; text-align:right; }
   #langCurrent{ min-width:24px; text-align:center; }
   .mega-dropdown{ display:flex; gap:28px; min-width:380px; padding:16px; }
   .mega-col{ display:flex; flex-direction:column; gap:2px; min-width:150px; }
+  .mega-col a[data-tip]{ position:relative; }
+  .mega-col a[data-tip]::after{
+    content:attr(data-tip);
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:220px; background:var(--text); color:#fff;
+    font-size:11.5px; font-weight:400; line-height:1.5;
+    padding:10px 12px; border-radius:8px;
+    box-shadow:0 4px 16px rgba(15,27,45,0.25);
+    z-index:100; opacity:0; pointer-events:none; transition:opacity .15s;
+  }
+  .mega-col a[data-tip]:hover::after{ opacity:1; }
+  .mega-col:first-child a[data-tip]::after{ right:100%; margin-right:12px; }
+  .mega-col:last-child a[data-tip]::after{ left:100%; margin-left:12px; }
+  .mega-col a[data-tip]{ position:relative; }
+  .mega-col a[data-tip]::after{
+    content: attr(data-tip);
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:220px; padding:10px 12px; border-radius:8px;
+    background:var(--text); color:#fff; font-size:11.5px; font-weight:500; line-height:1.5;
+    text-align:left; white-space:normal;
+    opacity:0; pointer-events:none; transition:opacity .15s;
+    box-shadow:0 4px 16px rgba(15,27,45,0.25); z-index:20;
+  }
+  .mega-col a[data-tip]:hover::after{ opacity:1; }
+  .mega-col:first-of-type a[data-tip]::after{ right:calc(100% + 12px); }
+  .mega-col:last-of-type a[data-tip]::after{ left:calc(100% + 12px); }
   .mega-col-title{
     font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.06em;
     color:#fff !important; text-decoration:none; margin-bottom:8px !important; padding:7px 11px !important;
@@ -473,18 +500,17 @@
         <div class="group-dropdown mega-dropdown">
           <div class="mega-col">
             <a class="mega-col-title" href="./core/" data-i18n="groupCore"></a>
-            <a href="./staking/" data-i18n="stakingTitle"></a>
-            <a href="./lending/" data-i18n="lendingTitle"></a>
-            <a href="./swap/" data-i18n="swapTitle"></a>
-            <a href="./bridge/" data-i18n="bridgeTitle"></a>
-            <a href="./wallet/" data-i18n="walletTitle"></a>
+            <a href="./staking/" data-i18n="stakingTitle" data-tip="Lock your USDC and earn a steady reward every second it's staked."></a>
+            <a href="./lending/" data-i18n="lendingTitle" data-tip="Borrow USDC against your USDC or cirBTC, instantly, without selling."></a>
+            <a href="./swap/" data-i18n="swapTitle" data-tip="Trade USDC, EURC, and cirBTC instantly through liquidity pools."></a>
+            <a href="./bridge/" data-i18n="bridgeTitle" data-tip="Bring USDC to Arc from another chain, or combine balances across chains."></a>
           </div>
           <div class="mega-col">
             <a class="mega-col-title" href="./treasury/" data-i18n="groupTreasury"></a>
-            <a href="./streaming/" data-i18n="streamTitle"></a>
-            <a href="./escrow/" data-i18n="escrowTitle"></a>
-            <a href="./multisig/" data-i18n="msigTitle"></a>
-            <a href="./velopay/" data-i18n="veloTitle"></a>
+            <a href="./streaming/" data-i18n="streamTitle" data-tip="Pay salaries or subscriptions as a continuous flow, not a lump sum. Great for remote teams who want to get paid as they work."></a>
+            <a href="./escrow/" data-i18n="escrowTitle" data-tip="Lock funds for a deal and release them only once the agreed work is done, with an arbiter for disputes."></a>
+            <a href="./multisig/" data-i18n="msigTitle" data-tip="Require multiple approvals before funds leave a shared vault. No single signer can move money alone."></a>
+            <a href="./velopay/" data-i18n="veloTitle" data-tip="Upload an unpaid invoice, get 97% of it in your wallet within seconds. Instant pay for freelancers and remote workers instead of waiting 30-60 days."></a>
           </div>
         </div>
       </div>
@@ -507,7 +533,13 @@
             <button id="btnRefresh" class="act" data-i18n="refreshBtn"></button>
           </div>
         </div>
-        <button id="connectBtn" data-i18n="connect"></button>
+        <div class="group-menu" id="connectMenu">
+          <div class="group-label" id="connectBtn" data-i18n="connect" style="display:inline-block;"></div>
+          <div class="group-dropdown" style="left:auto; right:0;">
+            <a href="#" id="btnConnectExisting">Connect existing wallet</a>
+            <a href="./wallet/">Create one with Circle</a>
+          </div>
+        </div>
         <button id="disconnectBtn" class="act" style="display:none;">Disconnect</button>
         <button id="switchNetBtn" class="act" style="display:none;" data-i18n="switchNetBtn"></button>
         <a id="btnClaim" class="act" href="https://faucet.circle.com/" target="_blank" rel="noopener" style="text-decoration:none; display:inline-block;" data-i18n="claimBtn"></a>
@@ -515,7 +547,6 @@
       <div class="topbar-right-sub">
         <div class="acct" id="acctInfo"></div>
         <span class="hint" id="claimStatus"></span>
-        <span class="hint" id="walletHint">No wallet? <a href="./wallet/" style="color:var(--primary); font-weight:600; text-decoration:none;">Create one with Circle →</a></span>
       </div>
     </div>
   </nav>
@@ -710,7 +741,7 @@ const I18N = {
     c3desc: "Pay salaries, retainers, or subscriptions as a continuous flow instead of a lump sum. The recipient can withdraw what they've earned at any moment.",
     c4desc: "Lock funds for a deal and only release them once the agreed condition is met. An arbiter can step in and resolve disputes fairly if the two sides don't agree.",
     c5desc: "Require multiple approvals before any fund leaves a shared vault. A single compromised signer can never move money alone.",
-    c6desc: "Upload an unpaid invoice and receive 90%+ of its value in your wallet within seconds, instead of waiting 30-60 days for your client to pay.",
+    c6desc: "Upload an unpaid invoice and receive 97% of its value in your wallet within seconds, instead of waiting 30-60 days for your client to pay.",
     aboutTagline: "An end-to-end stablecoin finance ecosystem, built from scratch on Arc Network. A concrete demonstration of what Arc's infrastructure can do.",
     aboutText: "StableLab is an independent experiment built by someone with no coding background, writing and deploying real smart contracts on Arc Network Testnet. It started as a simple stake/lend/swap idea and grew into an eight-module ecosystem that reimagines established institutional finance concepts (invoice factoring, escrow, treasury management, continuous payments) on Arc. The goal isn't to found a company. It's to show how strong Arc's infrastructure is in real-world use cases. The code is open-source, public on GitHub, and always open to feedback.",
 
@@ -745,7 +776,6 @@ const I18N = {
     msigTitle: "VaultGuard", msigDesc: "Known in finance as 'Treasury Management' · we designed VaultGuard for this",
     veloTitle: "VeloPay", veloDesc: "Known in finance as 'Invoice Factoring' · we designed VeloPay for this",
     bridgeTitle: "Bridge",
-    walletTitle: "Wallet",
     proposeBtn: "Create Proposal", proposalId: "Proposal ID", confirmBtn: "Confirm",
     msigRequired: "Required confirmations", msigProposalInfo: "Proposal info",
     msigHint: "First deposit into the vault, then propose a transfer · it executes automatically once enough confirmations are collected.",
@@ -1567,7 +1597,7 @@ async function connect(){
     document.getElementById('connectBtn').disabled = true;
     document.getElementById('accountMenu').style.display = 'inline-block';
     document.getElementById('disconnectBtn').style.display = 'inline-block';
-    document.getElementById('walletHint').style.display = 'none';
+    document.getElementById('connectMenu').style.display = 'none';
 
     await refreshAll();
     await new Promise(r => setTimeout(r, 500));
@@ -2009,15 +2039,13 @@ async function doMsigConfirm(){
 /* ---------- Events ---------- */
 function disconnect(){
   provider = null; signer = null; account = null;
-  document.getElementById('connectBtn').textContent = I18N[LANG].connect;
-  document.getElementById('connectBtn').disabled = false;
   document.getElementById('disconnectBtn').style.display = 'none';
   document.getElementById('accountMenu').style.display = 'none';
-  document.getElementById('walletHint').style.display = 'inline';
+  document.getElementById('connectMenu').style.display = 'inline-block';
   document.getElementById('acctInfo').textContent = '';
   log("Wallet disconnected.", "ok");
 }
-document.getElementById('connectBtn').addEventListener('click', connect);
+document.getElementById('btnConnectExisting').addEventListener('click', (e) => { e.preventDefault(); connect(); });
 document.getElementById('disconnectBtn').addEventListener('click', disconnect);
 document.getElementById('switchNetBtn').addEventListener('click', switchNetwork);
 document.getElementById('btnRefresh').addEventListener('click', () => { if(account){ refreshAll(); refreshClaimStatus(); } });
@@ -2098,8 +2126,7 @@ document.querySelectorAll('.group-menu').forEach(menu => {
     { icon: "🔒", name: "TrustLock", href: "./escrow/" },
     { icon: "🛡️", name: "VaultGuard", href: "./multisig/" },
     { icon: "🧾", name: "VeloPay", href: "./velopay/" },
-    { icon: "🌉", name: "Bridge", href: "./bridge/" },
-    { icon: "🔑", name: "Wallet", href: "./wallet/" }
+    { icon: "🌉", name: "Bridge", href: "./bridge/" }
   ];
   const html = items.map(it => `<a class="marquee-item" href="${it.href}"><span class="mq-icon">${it.icon}</span>${it.name}</a>`).join('');
   track.innerHTML = html + html;
