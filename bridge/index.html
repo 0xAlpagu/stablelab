@@ -149,7 +149,7 @@
         <button class="act primary" id="btnBridge">Bridge to Arc</button>
       </div>
       <div class="stat-line"><span class="k">Your USDC balance on selected chain</span><span class="v" id="sourceBalance">Connect wallet to check</span></div>
-      <div class="hint">Your wallet must hold USDC on the source chain, plus its native gas token (e.g. Sepolia ETH) to pay for the burn transaction. Uses Circle's official App Kit SDK (CCTP v2 under the hood). The chain list above is pulled live from Circle's SDK, so it stays current automatically. Balance preview below is only available for a handful of common chains; bridging itself works on all chains listed.</div>
+      <div class="hint">Your wallet must hold USDC on the source chain, plus its native gas token (e.g. Sepolia ETH) to pay for the burn transaction. Uses Circle's official App Kit SDK (CCTP v2 under the hood). Both the chain list and the balance preview below are pulled live from Circle's SDK, so they cover every chain it supports and stay current automatically.</div>
       <div class="steps-log" id="stepsLog"></div>
     </div>
   </div>
@@ -186,6 +186,8 @@ import { createPublicClient, http, formatUnits } from "https://esm.sh/viem";
 
 const kit = new AppKit();
 
+const bridgeChainsByKey = {};
+
 function populateSourceChains(){
   try{
     const chains = kit.getSupportedChains("bridge");
@@ -199,8 +201,10 @@ function populateSourceChains(){
     );
     evmTestnets.sort((a, b) => a.name.localeCompare(b.name));
     for(const c of evmTestnets){
+      const key = c.name.replace(/\s+/g, '_');
+      bridgeChainsByKey[key] = c;
       const opt = document.createElement('option');
-      opt.value = c.name.replace(/\s+/g, '_');
+      opt.value = key;
       opt.textContent = c.name;
       select.appendChild(opt);
     }
@@ -270,31 +274,37 @@ async function ensureWalletOnChain(chainKey){
   }
 }
 
-// Chain metadata for balance checks — only chains with verified RPC + USDC address are listed here.
-// Chains not in this map simply show "not available yet" instead of a guessed (possibly wrong) balance.
-const CHAIN_META = {
-  Base_Sepolia:     { rpcUrl: "https://sepolia.base.org", usdc: "0x036CbD53842c5426634e7929541eC2318f3dCF7e" },
-  Ethereum_Sepolia: { rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com", usdc: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" },
-  Arbitrum_Sepolia: { rpcUrl: "https://sepolia-rollup.arbitrum.io/rpc", usdc: "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d" },
-  Avalanche_Fuji:   { rpcUrl: "https://api.avax-test.network/ext/bc/C/rpc", usdc: "0x5425890298aed601595a70AB815c96711a31Bc65" },
-  Unichain_Sepolia: { rpcUrl: "https://sepolia.unichain.org", usdc: "0x31d0220469e10c4E71834a79b1f276d740d3768F" },
-};
-
 const ERC20_BALANCE_ABI = [
   { name: "balanceOf", type: "function", stateMutability: "view", inputs: [{ name: "owner", type: "address" }], outputs: [{ type: "uint256" }] }
 ];
+
+function extractRpcUrl(rpcEndpoints){
+  if(!rpcEndpoints) return null;
+  if(typeof rpcEndpoints === "string") return rpcEndpoints;
+  if(Array.isArray(rpcEndpoints)){
+    const first = rpcEndpoints[0];
+    if(typeof first === "string") return first;
+    if(first && typeof first === "object") return first.url || first.http || first.rpcUrl || null;
+  }
+  if(typeof rpcEndpoints === "object"){
+    return rpcEndpoints.default || rpcEndpoints.url || rpcEndpoints.http || null;
+  }
+  return null;
+}
 
 async function refreshSourceBalance(){
   const el = document.getElementById('sourceBalance');
   const chainKey = document.getElementById('sourceChain').value;
   if(!connectedAddress){ el.textContent = "Connect wallet to check"; return; }
-  const meta = CHAIN_META[chainKey];
-  if(!meta){ el.textContent = "Balance check not available for this chain yet"; return; }
+  const chain = bridgeChainsByKey[chainKey];
+  if(!chain || !chain.usdcAddress){ el.textContent = "Balance check not available for this chain"; return; }
+  const rpcUrl = extractRpcUrl(chain.rpcEndpoints);
+  if(!rpcUrl){ el.textContent = "Balance check not available for this chain"; return; }
   try{
     el.textContent = "Checking…";
-    const client = createPublicClient({ transport: http(meta.rpcUrl) });
+    const client = createPublicClient({ transport: http(rpcUrl) });
     const raw = await client.readContract({
-      address: meta.usdc,
+      address: chain.usdcAddress,
       abi: ERC20_BALANCE_ABI,
       functionName: "balanceOf",
       args: [connectedAddress],
