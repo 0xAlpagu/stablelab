@@ -132,13 +132,18 @@
       <div class="row"><input type="text" id="streamRecipient" placeholder="Recipient address (0x...)" /></div>
       <div class="row">
         <input type="number" id="streamAmount" placeholder="Total amount (USDC)" />
-        <input type="number" id="streamDuration" placeholder="Duration (seconds)" />
-        <button class="act" type="button" id="dur1h">1 hour</button>
-        <button class="act" type="button" id="dur1d">1 day</button>
-        <button class="act" type="button" id="dur1w">1 week</button>
+        <input type="number" id="streamDurationValue" placeholder="Duration" style="max-width:110px;" />
+        <select id="streamDurationUnit">
+          <option value="1">Seconds</option>
+          <option value="60">Minutes</option>
+          <option value="3600" selected>Hours</option>
+          <option value="86400">Days</option>
+          <option value="604800">Weeks</option>
+          <option value="2592000">Months</option>
+        </select>
         <button class="act primary" id="btnCreateStream">Start Stream</button>
       </div>
-      <div class="hint">Use a quick preset above, or enter a custom duration in seconds directly.</div>
+      <div class="hint">Enter a number and pick a unit — it's converted to seconds automatically.</div>
     </div>
   </div>
 
@@ -227,10 +232,12 @@ async function ensureApproval(amountWei){
 async function doCreateStream(){
   const recipient = document.getElementById('streamRecipient').value.trim();
   const amt = document.getElementById('streamAmount').value;
-  const dur = document.getElementById('streamDuration').value;
+  const durValue = document.getElementById('streamDurationValue').value;
+  const durUnit = Number(document.getElementById('streamDurationUnit').value);
+  const dur = Number(durValue) * durUnit;
   if(!account){ log("Connect your wallet first.", "err"); return; }
   if(!ethers.utils.isAddress(recipient)){ log("Enter a valid recipient address.", "err"); return; }
-  if(!amt || Number(amt) <= 0 || !dur || Number(dur) <= 0){ log("Enter a valid amount and duration.", "err"); return; }
+  if(!amt || Number(amt) <= 0 || !durValue || dur <= 0){ log("Enter a valid amount and duration.", "err"); return; }
   try{
     const wei = toWei(amt);
     await ensureApproval(wei);
@@ -288,9 +295,6 @@ async function doStreamCancel(){
   }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
 
-document.getElementById('dur1h').addEventListener('click', () => { document.getElementById('streamDuration').value = 3600; });
-document.getElementById('dur1d').addEventListener('click', () => { document.getElementById('streamDuration').value = 86400; });
-document.getElementById('dur1w').addEventListener('click', () => { document.getElementById('streamDuration').value = 604800; });
 document.getElementById('connectBtn').addEventListener('click', connect);
 document.getElementById('disconnectBtn').addEventListener('click', disconnect);
 document.getElementById('btnCreateStream').addEventListener('click', doCreateStream);
