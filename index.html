@@ -395,14 +395,15 @@
   }
 
   .topbar{
-    display:flex; align-items:flex-start; justify-content:flex-start; gap:0; padding:16px 0; margin-bottom:8px;
+    display:flex; align-items:flex-start; justify-content:space-between; gap:24px; padding:16px 0; margin-bottom:8px;
     border-bottom:1px solid var(--border); flex-wrap:wrap;
   }
+  .topbar-right{ order:1; }
   .topbar-left{ display:flex; flex-direction:column; align-items:flex-start; gap:5px; flex-wrap:nowrap; flex-shrink:0; max-width:250px; }
   .topbar-logo{ font-family:var(--sans); font-weight:800; font-size:38px; letter-spacing:-0.02em; color:var(--text); white-space:nowrap; line-height:1; transform-origin:left top; display:inline-block; }
   .topbar-logo .slash{ color:var(--primary); }
   .topbar-tagline{ font-size:11.5px; color:var(--text-mute); font-weight:500; line-height:1.5; text-align:justify; width:100%; display:none; }
-  .topbar-links{ display:flex; align-items:center; justify-content:flex-end; gap:18px; flex:0 0 auto; flex-wrap:nowrap; white-space:nowrap; padding-top:10px; margin-left:auto; margin-right:24px; }
+  .topbar-links{ display:flex; align-items:center; justify-content:flex-start; gap:18px; order:2; flex-basis:100%; flex-wrap:wrap; white-space:nowrap; padding-top:6px; margin-top:6px; border-top:1px solid var(--surface-alt); }
   .topbar-link{
     font-size:12px; font-weight:700; color:var(--text-mute); text-decoration:none;
     text-transform:uppercase; letter-spacing:.03em; white-space:nowrap;
@@ -1406,7 +1407,7 @@ const ADDR = {
   Faucet:    "0x9Fa05f0105CF1cba44493eAf67374a1F73dEc176",
   Streaming: "0x7e57100bb7e942Ee10F99aCbf0e6Fd282b220A3B",
   Escrow:    "0x8BBdE5DeA50C370b116efda19c2554BCF64Dac8c",
-  MultiSig:  "0xdb079Bf33820Ff818A9be0935Fc25e37f14f8061",
+  MultiSig:  "0x410862a8d468028D777Df00368D652922054ae2E",
   VeloPay:   "0x7be5cE722405A1d965c8e8E81535B74Eb5D0Ef47"
 };
 
