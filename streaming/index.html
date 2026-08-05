@@ -133,9 +133,12 @@
       <div class="row">
         <input type="number" id="streamAmount" placeholder="Total amount (USDC)" />
         <input type="number" id="streamDuration" placeholder="Duration (seconds)" />
+        <button class="act" type="button" id="dur1h">1 hour</button>
+        <button class="act" type="button" id="dur1d">1 day</button>
+        <button class="act" type="button" id="dur1w">1 week</button>
         <button class="act primary" id="btnCreateStream">Start Stream</button>
       </div>
-      <div class="hint">Example: to stream 100 USDC over 3600 seconds, enter 3600 for duration.</div>
+      <div class="hint">Use a quick preset above, or enter a custom duration in seconds directly.</div>
     </div>
   </div>
 
@@ -285,6 +288,9 @@ async function doStreamCancel(){
   }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
 
+document.getElementById('dur1h').addEventListener('click', () => { document.getElementById('streamDuration').value = 3600; });
+document.getElementById('dur1d').addEventListener('click', () => { document.getElementById('streamDuration').value = 86400; });
+document.getElementById('dur1w').addEventListener('click', () => { document.getElementById('streamDuration').value = 604800; });
 document.getElementById('connectBtn').addEventListener('click', connect);
 document.getElementById('disconnectBtn').addEventListener('click', disconnect);
 document.getElementById('btnCreateStream').addEventListener('click', doCreateStream);
