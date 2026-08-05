@@ -144,6 +144,8 @@
         <button class="act primary" id="btnCreateStream">Start Stream</button>
       </div>
       <div class="hint">Enter a number and pick a unit — it's converted to seconds automatically.</div>
+      <div class="stat-line"><span class="k">Platform fee (0.25%)</span><span class="v" id="streamFeePreview">—</span></div>
+      <div class="stat-line"><span class="k">Recipient will receive (total, over time)</span><span class="v" id="streamNetPreview">—</span></div>
     </div>
   </div>
 
@@ -297,6 +299,17 @@ async function doStreamCancel(){
 
 document.getElementById('connectBtn').addEventListener('click', connect);
 document.getElementById('disconnectBtn').addEventListener('click', disconnect);
+function updateStreamFeePreview(){
+  const amt = Number(document.getElementById('streamAmount').value);
+  const feeEl = document.getElementById('streamFeePreview');
+  const netEl = document.getElementById('streamNetPreview');
+  if(!amt || amt <= 0){ feeEl.textContent = '—'; netEl.textContent = '—'; return; }
+  const fee = amt * 0.0025;
+  const net = amt - fee;
+  feeEl.textContent = fee.toLocaleString('en-US', {maximumFractionDigits: 6}) + " USDC";
+  netEl.textContent = net.toLocaleString('en-US', {maximumFractionDigits: 6}) + " USDC";
+}
+document.getElementById('streamAmount').addEventListener('input', updateStreamFeePreview);
 document.getElementById('btnCreateStream').addEventListener('click', doCreateStream);
 document.getElementById('btnStreamCheck').addEventListener('click', doStreamCheck);
 document.getElementById('btnStreamWithdraw').addEventListener('click', doStreamWithdraw);
