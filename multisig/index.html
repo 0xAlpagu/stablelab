@@ -152,6 +152,8 @@
         <button class="act primary" id="btnMsigPropose">Create Proposal</button>
       </div>
       <div class="hint">After creating a proposal, the required number of signers must confirm it.</div>
+      <div class="stat-line"><span class="k">If executed: platform fee (0.2%)</span><span class="v" id="msigFeePreview">—</span></div>
+      <div class="stat-line"><span class="k">If executed: recipient receives</span><span class="v" id="msigNetPreview">—</span></div>
     </div>
   </div>
 
@@ -309,6 +311,17 @@ async function doMsigConfirm(){
 document.getElementById('connectBtn').addEventListener('click', connect);
 document.getElementById('disconnectBtn').addEventListener('click', disconnect);
 document.getElementById('btnMsigDeposit').addEventListener('click', doMsigDeposit);
+function updateMsigFeePreview(){
+  const amt = Number(document.getElementById('msigAmount').value);
+  const feeEl = document.getElementById('msigFeePreview');
+  const netEl = document.getElementById('msigNetPreview');
+  if(!amt || amt <= 0){ feeEl.textContent = '—'; netEl.textContent = '—'; return; }
+  const fee = amt * 0.002;
+  const net = amt - fee;
+  feeEl.textContent = fee.toLocaleString('en-US', {maximumFractionDigits: 6}) + " USDC";
+  netEl.textContent = net.toLocaleString('en-US', {maximumFractionDigits: 6}) + " USDC";
+}
+document.getElementById('msigAmount').addEventListener('input', updateMsigFeePreview);
 document.getElementById('btnMsigPropose').addEventListener('click', doMsigPropose);
 document.getElementById('btnMsigCheck').addEventListener('click', doMsigCheck);
 document.getElementById('btnMsigConfirm').addEventListener('click', doMsigConfirm);
