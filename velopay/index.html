@@ -169,6 +169,8 @@
         <button class="act primary" id="btnCreateInvoice">Create Invoice</button>
       </div>
       <div class="hint">The moment you create it, 97% of the amount is sent to your wallet.</div>
+      <div class="stat-line"><span class="k">You'll receive instantly (97%)</span><span class="v" id="veloAdvancePreview">—</span></div>
+      <div class="stat-line"><span class="k">Platform fee on repayment (0.5%)</span><span class="v" id="veloFeePreview">—</span></div>
     </div>
   </div>
 
@@ -347,6 +349,17 @@ document.getElementById('veloDueDate').min = new Date().toISOString().slice(0, 1
 document.getElementById('connectBtn').addEventListener('click', connect);
 document.getElementById('disconnectBtn').addEventListener('click', disconnect);
 document.getElementById('btnVeloAddLiq').addEventListener('click', doVeloAddLiq);
+function updateVeloFeePreview(){
+  const amt = Number(document.getElementById('veloFaceValue').value);
+  const advEl = document.getElementById('veloAdvancePreview');
+  const feeEl = document.getElementById('veloFeePreview');
+  if(!amt || amt <= 0){ advEl.textContent = '—'; feeEl.textContent = '—'; return; }
+  const advance = amt * 0.97;
+  const fee = amt * 0.005;
+  advEl.textContent = advance.toLocaleString('en-US', {maximumFractionDigits: 6}) + " USDC";
+  feeEl.textContent = fee.toLocaleString('en-US', {maximumFractionDigits: 6}) + " USDC";
+}
+document.getElementById('veloFaceValue').addEventListener('input', updateVeloFeePreview);
 document.getElementById('btnCreateInvoice').addEventListener('click', doCreateInvoice);
 document.getElementById('btnVeloCheck').addEventListener('click', doVeloCheck);
 document.getElementById('btnVeloRepay').addEventListener('click', doVeloRepay);
