@@ -121,6 +121,8 @@
         <button class="act primary" id="btnCreateDeal">Create Deal</button>
       </div>
       <div class="hint">The amount gets locked; it waits until you or the arbiter releases or refunds it.</div>
+      <div class="stat-line"><span class="k">If released: platform fee (1%)</span><span class="v" id="escrowFeePreview">—</span></div>
+      <div class="stat-line"><span class="k">If released: beneficiary receives</span><span class="v" id="escrowNetPreview">—</span></div>
     </div>
   </div>
 
@@ -273,6 +275,17 @@ async function doDealRefund(){
 
 document.getElementById('connectBtn').addEventListener('click', connect);
 document.getElementById('disconnectBtn').addEventListener('click', disconnect);
+function updateEscrowFeePreview(){
+  const amt = Number(document.getElementById('escrowAmount').value);
+  const feeEl = document.getElementById('escrowFeePreview');
+  const netEl = document.getElementById('escrowNetPreview');
+  if(!amt || amt <= 0){ feeEl.textContent = '—'; netEl.textContent = '—'; return; }
+  const fee = amt * 0.01;
+  const net = amt - fee;
+  feeEl.textContent = fee.toLocaleString('en-US', {maximumFractionDigits: 6}) + " USDC";
+  netEl.textContent = net.toLocaleString('en-US', {maximumFractionDigits: 6}) + " USDC";
+}
+document.getElementById('escrowAmount').addEventListener('input', updateEscrowFeePreview);
 document.getElementById('btnCreateDeal').addEventListener('click', doCreateDeal);
 document.getElementById('btnDealCheck').addEventListener('click', doDealCheck);
 document.getElementById('btnDealRelease').addEventListener('click', doDealRelease);
