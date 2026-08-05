@@ -165,7 +165,7 @@
       </div>
       <div class="row">
         <input type="number" id="veloFaceValue" placeholder="Invoice amount (USDC)" />
-        <input type="number" id="veloDueDate" placeholder="Due date (Unix timestamp)" />
+        <input type="date" id="veloDueDate" />
         <button class="act primary" id="btnCreateInvoice">Create Invoice</button>
       </div>
       <div class="hint">The moment you create it, 97% of the amount is sent to your wallet.</div>
@@ -281,7 +281,8 @@ async function doCreateInvoice(){
   if(!faceValue || Number(faceValue) <= 0 || !dueDate){ log("Enter a valid amount and due date.", "err"); return; }
   try{
     log("Creating invoice…");
-    const tx = await velopay.createInvoice(debtor, toWei(faceValue), Math.floor(Number(dueDate)));
+    const dueDateUnix = Math.floor(new Date(dueDate + "T00:00:00Z").getTime() / 1000);
+    const tx = await velopay.createInvoice(debtor, toWei(faceValue), dueDateUnix);
     const receipt = await tx.wait();
 
     let newInvoiceId = null;
@@ -342,6 +343,7 @@ async function doVeloDefault(){
   }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
 
+document.getElementById('veloDueDate').min = new Date().toISOString().slice(0, 10);
 document.getElementById('connectBtn').addEventListener('click', connect);
 document.getElementById('disconnectBtn').addEventListener('click', disconnect);
 document.getElementById('btnVeloAddLiq').addEventListener('click', doVeloAddLiq);
