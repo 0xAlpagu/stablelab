@@ -170,6 +170,23 @@
       <div class="hint">First deposit into the vault, then propose a transfer; once enough confirmations are collected, it executes automatically.</div>
     </div>
   </div>
+
+  <div class="section">
+    <div class="head">Manage Signers</div>
+    <div class="body">
+      <div class="row">
+        <input type="text" id="msigNewOwner" placeholder="Signer address (0x...)" />
+        <button class="act primary" id="btnMsigAddOwner">Add Signer</button>
+        <button class="act" id="btnMsigRemoveOwner">Remove Signer</button>
+      </div>
+      <div class="row">
+        <input type="number" id="msigNewRequired" placeholder="New required confirmations" />
+        <button class="act" id="btnMsigChangeRequired">Update Required</button>
+      </div>
+      <div class="stat-line"><span class="k">Total signers</span><span class="v" id="msigOwnersCount">—</span></div>
+      <div class="hint">Any existing signer can add or remove another signer, or change the confirmation threshold — this doesn't require a vote in this version.</div>
+    </div>
+  </div>
 </div>
 
 <div id="log"></div>
@@ -177,7 +194,7 @@
 <script>
 const ADDR = {
   USDC:     "0x3600000000000000000000000000000000000000",
-  MultiSig: "0xdb079Bf33820Ff818A9be0935Fc25e37f14f8061"
+  MultiSig: "0x410862a8d468028D777Df00368D652922054ae2E"
 };
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
@@ -189,7 +206,13 @@ const MULTISIG_ABI = [
   "function proposeTransfer(address to, uint256 amount) returns (uint256)",
   "function confirm(uint256 proposalId)",
   "function proposals(uint256) view returns (address to, uint256 amount, uint256 confirmations, bool executed)",
-  "function required() view returns (uint256)"
+  "function required() view returns (uint256)",
+  "function addOwner(address newOwner)",
+  "function removeOwner(address ownerToRemove)",
+  "function changeRequired(uint256 newRequired)",
+  "function ownersCount() view returns (uint256)",
+  "function owners(uint256) view returns (address)",
+  "function isOwner(address) view returns (bool)"
 ];
 
 let provider, signer, account, usdc, multisig;
@@ -218,6 +241,7 @@ async function connect(){
     document.getElementById('connectBtn').disabled = true;
     document.getElementById('disconnectBtn').style.display = 'inline-block';
     document.getElementById('walletHint').style.display = 'none';
+    await refreshOwnersCount();
   }catch(e){ log("Connection error: " + (e.message || e), "err"); }
 }
 
@@ -322,6 +346,51 @@ function updateMsigFeePreview(){
   netEl.textContent = net.toLocaleString('en-US', {maximumFractionDigits: 6}) + " USDC";
 }
 document.getElementById('msigAmount').addEventListener('input', updateMsigFeePreview);
+async function refreshOwnersCount(){
+  if(!multisig) return;
+  try{
+    const count = await multisig.ownersCount();
+    document.getElementById('msigOwnersCount').textContent = count.toString();
+  }catch(e){ console.error(e); }
+}
+async function doAddOwner(){
+  const addr = document.getElementById('msigNewOwner').value.trim();
+  if(!account){ log("Connect your wallet first.", "err"); return; }
+  if(!ethers.utils.isAddress(addr)){ log("Enter a valid address.", "err"); return; }
+  try{
+    log("Adding signer…");
+    const tx = await multisig.addOwner(addr);
+    await tx.wait();
+    log("Signer added.", "ok");
+    await refreshOwnersCount();
+  }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
+}
+async function doRemoveOwner(){
+  const addr = document.getElementById('msigNewOwner').value.trim();
+  if(!account){ log("Connect your wallet first.", "err"); return; }
+  if(!ethers.utils.isAddress(addr)){ log("Enter a valid address.", "err"); return; }
+  try{
+    log("Removing signer…");
+    const tx = await multisig.removeOwner(addr);
+    await tx.wait();
+    log("Signer removed.", "ok");
+    await refreshOwnersCount();
+  }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
+}
+async function doChangeRequired(){
+  const val = document.getElementById('msigNewRequired').value;
+  if(!account){ log("Connect your wallet first.", "err"); return; }
+  if(!val || Number(val) <= 0){ log("Enter a valid number.", "err"); return; }
+  try{
+    log("Updating required confirmations…");
+    const tx = await multisig.changeRequired(Math.floor(Number(val)));
+    await tx.wait();
+    log("Required confirmations updated.", "ok");
+  }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
+}
+document.getElementById('btnMsigAddOwner').addEventListener('click', doAddOwner);
+document.getElementById('btnMsigRemoveOwner').addEventListener('click', doRemoveOwner);
+document.getElementById('btnMsigChangeRequired').addEventListener('click', doChangeRequired);
 document.getElementById('btnMsigPropose').addEventListener('click', doMsigPropose);
 document.getElementById('btnMsigCheck').addEventListener('click', doMsigCheck);
 document.getElementById('btnMsigConfirm').addEventListener('click', doMsigConfirm);
