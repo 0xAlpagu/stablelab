@@ -139,6 +139,23 @@
     </div>
   </div>
 
+  <div class="section" id="panelEURCLiquidity">
+    <div class="head">Manage Liquidity · USDC ↔ EURC</div>
+    <div class="body">
+      <div class="row">
+        <input type="number" id="addUsdcEURC" placeholder="USDC amount" />
+        <input type="number" id="addEurcEURC" placeholder="EURC amount" />
+        <button class="act primary" id="btnAddLiqEURC">Add Liquidity</button>
+      </div>
+      <div class="row">
+        <input type="number" id="removeSharesEURC" placeholder="Shares to withdraw" />
+        <button class="act" id="btnRemoveLiqEURC">Remove Liquidity</button>
+      </div>
+      <div class="stat-line"><span class="k">Your LP shares</span><span class="v" id="myLpEURC">—</span></div>
+      <div class="hint">Add liquidity to earn a share of the 0.3% swap fee. Withdraw your shares any time to get your USDC and EURC back proportionally.</div>
+    </div>
+  </div>
+
   <div class="section" id="panelBTC" style="display:none;">
     <div class="head">Swap · USDC ↔ cirBTC</div>
     <div class="body">
@@ -156,6 +173,23 @@
       <div class="hint">Before swapping, spending approval for the relevant token is requested automatically.</div>
     </div>
   </div>
+
+  <div class="section" id="panelBTCLiquidity" style="display:none;">
+    <div class="head">Manage Liquidity · USDC ↔ cirBTC</div>
+    <div class="body">
+      <div class="row">
+        <input type="number" id="addUsdcBTC" placeholder="USDC amount" />
+        <input type="number" id="addBtcBTC" placeholder="cirBTC amount" />
+        <button class="act primary" id="btnAddLiqBTC">Add Liquidity</button>
+      </div>
+      <div class="row">
+        <input type="number" id="removeSharesBTC" placeholder="Shares to withdraw" />
+        <button class="act" id="btnRemoveLiqBTC">Remove Liquidity</button>
+      </div>
+      <div class="stat-line"><span class="k">Your LP shares</span><span class="v" id="myLpBTC">—</span></div>
+      <div class="hint">Add liquidity to earn a share of the 0.3% swap fee. Withdraw your shares any time to get your USDC and cirBTC back proportionally.</div>
+    </div>
+  </div>
 </div>
 
 <div id="log"></div>
@@ -165,7 +199,7 @@ const ADDR = {
   USDC:  "0x3600000000000000000000000000000000000000",
   EURC:  "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a",
   cirBTC:"0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF",
-  Swap:  "0xA89e5413390C663bED9fc40D54507Cb3F8d52434"
+  Swap:  "0x5d9be5D2be16976418e36D4312ba3BF3e9b9d4E0"
 };
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
@@ -177,6 +211,14 @@ const SWAP_ABI = [
   "function swapEURCforUSDC(uint256 amountIn)",
   "function swapUSDCforBTC(uint256 amountIn)",
   "function swapBTCforUSDC(uint256 amountIn)",
+  "function addLiquidityEURC(uint256 amountUSDC, uint256 amountEURC)",
+  "function removeLiquidityEURC(uint256 shares)",
+  "function addLiquidityBTC(uint256 amountUSDC, uint256 amountBTC)",
+  "function removeLiquidityBTC(uint256 shares)",
+  "function lpSharesEURC(address) view returns (uint256)",
+  "function totalSharesEURC() view returns (uint256)",
+  "function lpSharesBTC(address) view returns (uint256)",
+  "function totalSharesBTC() view returns (uint256)",
   "function reserveUSDC_1() view returns (uint256)",
   "function reserveEURC() view returns (uint256)",
   "function reserveUSDC_2() view returns (uint256)",
@@ -218,6 +260,7 @@ async function connect(){
     document.getElementById('disconnectBtn').style.display = 'inline-block';
     document.getElementById('walletHint').style.display = 'none';
     await refreshReserves();
+    await refreshMyShares();
   }catch(e){ log("Connection error: " + (e.message || e), "err"); }
 }
 
@@ -228,6 +271,8 @@ function disconnect(){
   document.getElementById('disconnectBtn').style.display = 'none';
   document.getElementById('acctInfo').textContent = '';
   document.getElementById('walletHint').style.display = 'block';
+  document.getElementById('myLpEURC').textContent = '—';
+  document.getElementById('myLpBTC').textContent = '—';
   log("Wallet disconnected.", "ok");
 }
 
@@ -250,13 +295,17 @@ document.getElementById('poolEURC').addEventListener('click', () => {
   document.getElementById('poolEURC').classList.add('active');
   document.getElementById('poolBTC').classList.remove('active');
   document.getElementById('panelEURC').style.display = 'block';
+  document.getElementById('panelEURCLiquidity').style.display = 'block';
   document.getElementById('panelBTC').style.display = 'none';
+  document.getElementById('panelBTCLiquidity').style.display = 'none';
 });
 document.getElementById('poolBTC').addEventListener('click', () => {
   document.getElementById('poolBTC').classList.add('active');
   document.getElementById('poolEURC').classList.remove('active');
   document.getElementById('panelBTC').style.display = 'block';
+  document.getElementById('panelBTCLiquidity').style.display = 'block';
   document.getElementById('panelEURC').style.display = 'none';
+  document.getElementById('panelEURCLiquidity').style.display = 'none';
 });
 
 // ---------- Pool 1: USDC <-> EURC ----------
@@ -367,6 +416,80 @@ async function doSwapBTC(){
   }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
 
+async function refreshMyShares(){
+  if(!swap || !account) return;
+  try{
+    const sE = await swap.lpSharesEURC(account);
+    document.getElementById('myLpEURC').textContent = sE.toString();
+    const sB = await swap.lpSharesBTC(account);
+    document.getElementById('myLpBTC').textContent = sB.toString();
+  }catch(e){ console.error(e); }
+}
+
+async function doAddLiquidityEURC(){
+  const amtUsdc = document.getElementById('addUsdcEURC').value;
+  const amtEurc = document.getElementById('addEurcEURC').value;
+  if(!account){ log("Connect your wallet first.", "err"); return; }
+  if(!amtUsdc || Number(amtUsdc) <= 0 || !amtEurc || Number(amtEurc) <= 0){ log("Enter valid amounts.", "err"); return; }
+  try{
+    const weiUsdc = toUsdc(amtUsdc);
+    const weiEurc = toEurc(amtEurc);
+    await ensureApproval(usdc, ADDR.Swap, weiUsdc);
+    await ensureApproval(eurc, ADDR.Swap, weiEurc);
+    log("Adding liquidity…");
+    const tx = await swap.addLiquidityEURC(weiUsdc, weiEurc);
+    await tx.wait();
+    log("Liquidity added.", "ok");
+    await refreshReserves();
+    await refreshMyShares();
+  }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
+}
+async function doRemoveLiquidityEURC(){
+  const shares = document.getElementById('removeSharesEURC').value;
+  if(!account){ log("Connect your wallet first.", "err"); return; }
+  if(!shares || Number(shares) <= 0){ log("Enter a valid share amount.", "err"); return; }
+  try{
+    log("Removing liquidity…");
+    const tx = await swap.removeLiquidityEURC(shares);
+    await tx.wait();
+    log("Liquidity removed.", "ok");
+    await refreshReserves();
+    await refreshMyShares();
+  }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
+}
+
+async function doAddLiquidityBTC(){
+  const amtUsdc = document.getElementById('addUsdcBTC').value;
+  const amtBtc = document.getElementById('addBtcBTC').value;
+  if(!account){ log("Connect your wallet first.", "err"); return; }
+  if(!amtUsdc || Number(amtUsdc) <= 0 || !amtBtc || Number(amtBtc) <= 0){ log("Enter valid amounts.", "err"); return; }
+  try{
+    const weiUsdc = toUsdc(amtUsdc);
+    const weiBtc = toBtc(amtBtc);
+    await ensureApproval(usdc, ADDR.Swap, weiUsdc);
+    await ensureApproval(cirBTC, ADDR.Swap, weiBtc);
+    log("Adding liquidity…");
+    const tx = await swap.addLiquidityBTC(weiUsdc, weiBtc);
+    await tx.wait();
+    log("Liquidity added.", "ok");
+    await refreshReserves();
+    await refreshMyShares();
+  }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
+}
+async function doRemoveLiquidityBTC(){
+  const shares = document.getElementById('removeSharesBTC').value;
+  if(!account){ log("Connect your wallet first.", "err"); return; }
+  if(!shares || Number(shares) <= 0){ log("Enter a valid share amount.", "err"); return; }
+  try{
+    log("Removing liquidity…");
+    const tx = await swap.removeLiquidityBTC(shares);
+    await tx.wait();
+    log("Liquidity removed.", "ok");
+    await refreshReserves();
+    await refreshMyShares();
+  }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
+}
+
 document.getElementById('connectBtn').addEventListener('click', connect);
 document.getElementById('disconnectBtn').addEventListener('click', disconnect);
 document.getElementById('btnSwapEURC').addEventListener('click', doSwapEURC);
@@ -377,6 +500,10 @@ document.getElementById('btnSwapBTC').addEventListener('click', doSwapBTC);
 document.getElementById('dirUsdcToBtc').addEventListener('click', () => setDirBTC('toBTC'));
 document.getElementById('dirBtcToUsdc').addEventListener('click', () => setDirBTC('toUSDC'));
 document.getElementById('swapAmtBTC').addEventListener('input', updatePreviewBTC);
+document.getElementById('btnAddLiqEURC').addEventListener('click', doAddLiquidityEURC);
+document.getElementById('btnRemoveLiqEURC').addEventListener('click', doRemoveLiquidityEURC);
+document.getElementById('btnAddLiqBTC').addEventListener('click', doAddLiquidityBTC);
+document.getElementById('btnRemoveLiqBTC').addEventListener('click', doRemoveLiquidityBTC);
 setInterval(refreshReserves, 20000);
 
 /* ---------- Auto-reconnect ---------- */
