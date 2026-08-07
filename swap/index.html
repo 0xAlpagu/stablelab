@@ -133,6 +133,7 @@
         <button class="act primary" id="btnSwapEURC">Swap</button>
       </div>
       <div class="stat-line"><span class="k">Amount you'll receive</span><span class="v" id="swapPreviewEURC">—</span></div>
+      <div class="stat-line" id="priceImpactRowEURC" style="display:none;"><span class="k">Price impact</span><span class="v" id="priceImpactEURC">—</span></div>
       <div class="stat-line"><span class="k">Pool USDC</span><span class="v" id="swReserveUSDC1">—</span></div>
       <div class="stat-line"><span class="k">Pool EURC</span><span class="v" id="swReserveEURC">—</span></div>
       <div class="hint">Before swapping, spending approval for the relevant token is requested automatically.</div>
@@ -169,6 +170,7 @@
         <button class="act primary" id="btnSwapBTC">Swap</button>
       </div>
       <div class="stat-line"><span class="k">Amount you'll receive</span><span class="v" id="swapPreviewBTC">—</span></div>
+      <div class="stat-line" id="priceImpactRowBTC" style="display:none;"><span class="k">Price impact</span><span class="v" id="priceImpactBTC">—</span></div>
       <div class="stat-line"><span class="k">Pool USDC</span><span class="v" id="swReserveUSDC2">—</span></div>
       <div class="stat-line"><span class="k">Pool cirBTC</span><span class="v" id="swReserveBTC">—</span></div>
       <div class="hint">Before swapping, spending approval for the relevant token is requested automatically.</div>
@@ -320,23 +322,50 @@ function setDirEURC(dir){
   updatePreviewEURC();
 }
 let previewTimerEURC = null;
+function showPriceImpact(rowId, elId, impactPct){
+  const row = document.getElementById(rowId);
+  const el = document.getElementById(elId);
+  row.style.display = 'flex';
+  el.textContent = impactPct.toFixed(2) + "%";
+  if(impactPct >= 10){
+    el.style.color = "var(--err)";
+    el.textContent += " — very high, you'll get a much worse rate";
+  } else if(impactPct >= 3){
+    el.style.color = "#c07a00";
+    el.textContent += " — noticeable, this pool has limited liquidity";
+  } else {
+    el.style.color = "var(--ok)";
+  }
+}
+
 function updatePreviewEURC(){
   clearTimeout(previewTimerEURC);
   previewTimerEURC = setTimeout(async () => {
     const previewEl = document.getElementById('swapPreviewEURC');
+    const impactRow = document.getElementById('priceImpactRowEURC');
     const amt = document.getElementById('swapAmtEURC').value;
-    if(!swap || !amt || Number(amt) <= 0){ previewEl.textContent = "—"; return; }
+    if(!swap || !amt || Number(amt) <= 0){ previewEl.textContent = "—"; impactRow.style.display = 'none'; return; }
     try{
       const r1 = await swap.reserveUSDC_1();
       const rE = await swap.reserveEURC();
+      let amountIn, reserveIn, reserveOut, out;
       if(dirEURC === 'toEURC'){
-        const out = await swap.getAmountOut(toUsdc(amt), r1, rE);
+        amountIn = toUsdc(amt); reserveIn = r1; reserveOut = rE;
+        out = await swap.getAmountOut(amountIn, reserveIn, reserveOut);
         previewEl.textContent = "≈ " + fmt6(out) + " EURC";
       } else {
-        const out = await swap.getAmountOut(toEurc(amt), rE, r1);
+        amountIn = toEurc(amt); reserveIn = rE; reserveOut = r1;
+        out = await swap.getAmountOut(amountIn, reserveIn, reserveOut);
         previewEl.textContent = "≈ " + fmt6(out) + " USDC";
       }
-    }catch(e){ previewEl.textContent = "—"; }
+      // Spot fiyata göre (kaymasız) beklenen çıktı ile gerçek çıktının farkı
+      const spotOut = amountIn.mul(reserveOut).div(reserveIn);
+      if(spotOut.gt(0)){
+        const diff = spotOut.sub(out);
+        const impactPct = diff.mul(10000).div(spotOut).toNumber() / 100;
+        showPriceImpact('priceImpactRowEURC', 'priceImpactEURC', Math.max(0, impactPct));
+      }
+    }catch(e){ previewEl.textContent = "—"; impactRow.style.display = 'none'; }
   }, 400);
 }
 async function ensureApproval(token, spender, amountWei){
@@ -390,19 +419,29 @@ function updatePreviewBTC(){
   clearTimeout(previewTimerBTC);
   previewTimerBTC = setTimeout(async () => {
     const previewEl = document.getElementById('swapPreviewBTC');
+    const impactRow = document.getElementById('priceImpactRowBTC');
     const amt = document.getElementById('swapAmtBTC').value;
-    if(!swap || !amt || Number(amt) <= 0){ previewEl.textContent = "—"; return; }
+    if(!swap || !amt || Number(amt) <= 0){ previewEl.textContent = "—"; impactRow.style.display = 'none'; return; }
     try{
       const r2 = await swap.reserveUSDC_2();
       const rB = await swap.reserveBTC();
+      let amountIn, reserveIn, reserveOut, out;
       if(dirBTC === 'toBTC'){
-        const out = await swap.getAmountOut(toUsdc(amt), r2, rB);
+        amountIn = toUsdc(amt); reserveIn = r2; reserveOut = rB;
+        out = await swap.getAmountOut(amountIn, reserveIn, reserveOut);
         previewEl.textContent = "≈ " + fmt8(out) + " cirBTC";
       } else {
-        const out = await swap.getAmountOut(toBtc(amt), rB, r2);
+        amountIn = toBtc(amt); reserveIn = rB; reserveOut = r2;
+        out = await swap.getAmountOut(amountIn, reserveIn, reserveOut);
         previewEl.textContent = "≈ " + fmt6(out) + " USDC";
       }
-    }catch(e){ previewEl.textContent = "—"; }
+      const spotOut = amountIn.mul(reserveOut).div(reserveIn);
+      if(spotOut.gt(0)){
+        const diff = spotOut.sub(out);
+        const impactPct = diff.mul(10000).div(spotOut).toNumber() / 100;
+        showPriceImpact('priceImpactRowBTC', 'priceImpactBTC', Math.max(0, impactPct));
+      }
+    }catch(e){ previewEl.textContent = "—"; impactRow.style.display = 'none'; }
   }, 400);
 }
 async function doSwapBTC(){
