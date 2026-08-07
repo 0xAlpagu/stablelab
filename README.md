@@ -1,107 +1,61 @@
-[README.md](https://github.com/user-attachments/files/30650025/README.md)
-# StableLab
+StableLab
 
-A full-stack DeFi ecosystem built from scratch on [Arc](https://www.arc.network): 8 live modules, all running on real Arc-native assets (USDC, EURC, cirBTC), not custom demo tokens.
+A suite of stablecoin-native DeFi and payment tools deployed on Arc Testnet, built entirely on real Arc-issued assets: USDC, EURC, and cirBTC.
 
-**Live app:** [stablelabs.vercel.app](https://stablelabs.vercel.app) · [0xalpagu.github.io/stablelab](https://0xalpagu.github.io/stablelab)
-**Code:** this repository
-**Network:** Arc Testnet (Chain ID `5042002`)
+Live app: https://stablelabs.vercel.app GitHub Pages mirror: https://0xalpagu.github.io/stablelab/
 
-Built by an independent, solo builder with no prior coding background, using AI-assisted development throughout.
+Overview
 
----
+StableLab is a suite of eight interoperable modules spanning core DeFi primitives and treasury/payment tools. Each module is an independent, standalone smart contract; they are not wired together through a shared settlement or accounting layer. They're best thought of as a coordinated set of tools built on the same asset base (USDC, EURC, cirBTC) rather than a single unified system.
 
-## What's inside
+The project demonstrates what Arc's stablecoin-optimized infrastructure can support when you build across the full stack Circle provides: USDC as the settlement asset, CCTP for cross-chain liquidity, Gateway for unified balances, and Circle Wallets for onboarding.
 
-### Core Tools
+Modules
+DeFi
+Staking — USDC deposits accrue a continuous, per-second reward with no lockup period. Principal and reward are withdrawn together at any time.
+Lending — Borrowers post USDC or cirBTC as collateral and draw USDC instantly up to 66% of collateral value. cirBTC is used here as a testnet representation of wrapped Bitcoin; its exchange rate against USDC is set via a fixed demo parameter (1 cirBTC = 100,000 USDC) rather than a live price oracle.
+Swap — Two independent constant-product AMM pools (USDC/EURC and USDC/cirBTC), each with a 0.3% liquidity provider fee, slippage protection (minAmountOut), a live price-impact indicator, and LP share tracking.
+Bridge — Real CCTP v2 burn-and-mint bridging into Arc from any supported testnet chain, plus a second mode built on Circle's Unified Balance (Gateway) for spending USDC held across multiple chains directly to an Arc wallet.
+Treasury & Payments
+FlowPay — Continuous payment streaming. Funds vest to the recipient second-by-second over a sender-defined duration, with a 0.25% platform fee taken at stream creation.
+TrustLock — Arbiter-based escrow. Release requires depositor or arbiter action; refund requires beneficiary or arbiter action. A 1% fee applies on release only, none on refund.
+VaultGuard — Multi-signer shared treasury with configurable approval thresholds. Signer membership and confirmation threshold can be updated after deployment. A 0.2% fee applies on executed transfers.
+VeloPay — Invoice factoring. A freelancer or SME uploads an unpaid invoice and receives 97% of its face value immediately from a shared liquidity pool; the debtor repays the full amount later, with a 0.5% platform fee on repayment.
 
-| Module | What it does |
-|---|---|
-| **Staking** | Lock USDC, earn a continuous, per-second reward. No lockup; withdraw principal and reward together whenever you like. |
-| **Lending** | Post USDC *or* cirBTC as collateral, borrow USDC instantly up to 66% of your collateral's value. |
-| **Swap** | Two AMM pools (USDC↔EURC, USDC↔cirBTC), x·y=k pricing, 0.3% LP fee. |
-| **Bridge** | Bring USDC to Arc from another testnet chain via Circle's **CCTP** (real burn-and-mint), or via Circle's **Unified Balance Kit** (Gateway) to combine USDC held across multiple chains into a single spend on Arc. |
+Each treasury module surfaces its fee breakdown live in the interface before a transaction is submitted.
 
-### Treasury & Payment Tools
+Circle Stack Integration
+USDC as the settlement asset across all eight modules, alongside EURC and cirBTC where relevant
+CCTP, via Circle App Kit, for genuine cross-chain USDC transfer into Arc
+Circle Gateway, via App Kit's Unified Balance, for combining USDC held across chains into a single spendable balance on Arc
+Circle Wallets (User-Controlled), giving users a working Arc wallet from an email address and PIN, with no browser extension or seed phrase
+Contracts (Arc Testnet)
+Contract	Address
+USDC	0x3600000000000000000000000000000000000000
+EURC	0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a
+cirBTC	0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF
+Staking	0x35F2E254c71394f923B6Ac2Aead20beAf41573E5
+Lending	0x7d1cb2D60523c557f1FcCd2ffa8FbADC00C1C1bC
+Swap	0x2b91E208152c372e7F2F51e69CE9738DD0Cca784
+FlowPay (streaming)	0x7e57100bb7e942Ee10F99aCbf0e6Fd282b220A3B
+TrustLock (escrow)	0x8BBdE5DeA50C370b116efda19c2554BCF64Dac8c
+VaultGuard (multi-sig)	0x410862a8d468028D777Df00368D652922054ae2E
+VeloPay (invoice factoring)	0x7be5cE722405A1d965c8e8E81535B74Eb5D0Ef47
 
-| Module | What it does |
-|---|---|
-| **FlowPay** | Continuous payment streaming: funds vest second-by-second instead of arriving as a lump sum. 0.25% platform fee. |
-| **TrustLock** | Arbiter-based escrow. Funds release only when the agreed condition is met, or refund if it doesn't. 1% fee on release, no fee on refund. |
-| **VaultGuard** | Multi-approval shared treasury. A transfer only executes once enough signers confirm. 0.2% fee on executed transfers. |
-| **VeloPay** | Invoice factoring: upload an unpaid invoice, receive 97% of its value instantly instead of waiting 30-60 days. 0.5% platform fee on repayment. |
+Chain ID: 5042002 (Arc Network Testnet)
 
----
+Site Structure
+/staking/   /lending/   /swap/      /streaming/
+/escrow/    /multisig/  /velopay/   /bridge/
+/wallet/    /core/      /treasury/  /about/
+/pricing/   /contact/
 
-## Circle tools used
+Deployed on both GitHub Pages (static) and Vercel (adds serverless functions for Circle Wallets authentication).
 
-- **USDC**: the primary settlement asset across every module (native Arc USDC, `0x3600000000000000000000000000000000000000`)
-- **EURC** / **cirBTC**: secondary assets in the Swap and Lending modules
-- **CCTP** (via [Arc App Kit](https://docs.arc.io/app-kit)): cross-chain USDC bridging into Arc, real burn-and-mint, no wrapped tokens
-- **Gateway / Unified Balance Kit** (via Arc App Kit): deposit USDC from any supported testnet chain and spend it directly on Arc, combining balances across chains
-- **Circle Faucet**: the site links directly to `faucet.circle.com` instead of a custom faucet contract, since real USDC/EURC/cirBTC can't be minted by the app itself
+Status
 
-## Architecture
+All contracts are deployed and verified on Arc Testnet. Every module has been tested end-to-end, deposit through withdrawal, including the CCTP bridge flow and Circle Wallets onboarding. Open source, under active development.
 
-StableLab has no traditional backend server. It's a static frontend (plain HTML/CSS/JS, no build step) talking directly to:
+Feedback
 
-1. **Smart contracts deployed on Arc Testnet** (see addresses below) via `ethers.js` and the user's own browser wallet (Rabby/MetaMask-compatible).
-2. **Circle's App Kit SDK** (loaded via ESM CDN, no bundler required) for CCTP bridging and Unified Balance, using [EIP-6963](https://eips.ethereum.org/EIPS/eip-6963) wallet discovery and a `viem` adapter connected to the user's injected wallet, never a private key.
-
-```
-┌─────────────────────────┐
-│   Browser (static site)  │
-│  HTML / CSS / ethers.js  │
-└─────────┬────────┬───────┘
-          │        │
-   ethers.js    Circle App Kit (viem adapter)
-          │        │
-          ▼        ▼
-┌─────────────────────────┐      ┌───────────────────────┐
-│   Arc Testnet contracts  │      │  CCTP / Gateway infra  │
-│  (Staking, Lending, ...) │◄─────┤   (Circle, other       │
-└─────────────────────────┘      │    testnet chains)      │
-                                  └───────────────────────┘
-```
-
-## Deployed contracts (Arc Testnet)
-
-All contracts are verified on [testnet.arcscan.app](https://testnet.arcscan.app).
-
-| Contract | Address | Description |
-|---|---|---|
-| StakingV2 | `0x35F2E254c71394f923B6Ac2Aead20beAf41573E5` | USDC staking with per-second rewards |
-| LendingV2 | `0x7d1cb2D60523c557f1FcCd2ffa8FbADC00C1C1bC` | USDC/cirBTC collateralized USDC lending |
-| SwapV3 | `0xA89e5413390C663bED9fc40D54507Cb3F8d52434` | USDC↔EURC and USDC↔cirBTC AMM pools |
-| StreamingV2 (FlowPay) | `0x7e57100bb7e942Ee10F99aCbf0e6Fd282b220A3B` | Continuous payment streaming |
-| EscrowV2 (TrustLock) | `0x8BBdE5DeA50C370b116efda19c2554BCF64Dac8c` | Arbiter-based escrow |
-| MultiSigV2 (VaultGuard) | `0xdb079Bf33820Ff818A9be0935Fc25e37f14f8061` | Multi-approval shared treasury |
-| VeloPayV2 | `0x7be5cE722405A1d965c8e8E81535B74Eb5D0Ef47` | Invoice factoring |
-
-All contracts have a reentrancy guard and checked ERC-20 transfers, added after a [SolidityScan](https://solidityscan.com) security pass.
-
-## Running locally
-
-No build step, no dependencies to install for the frontend itself.
-
-```bash
-git clone https://github.com/0xAlpagu/stablelab.git
-cd stablelab
-# open index.html directly, or serve the folder with any static file server, e.g.:
-npx serve .
-```
-
-Each module lives in its own folder (`staking/`, `lending/`, `swap/`, `bridge/`, `streaming/`, `escrow/`, `multisig/`, `velopay/`) with a self-contained `index.html`.
-
-To interact with the app, you'll need:
-- A browser wallet (Rabby, MetaMask, or any EIP-1193/EIP-6963-compatible wallet)
-- Arc Testnet added to your wallet (Chain ID `5042002`, RPC `https://rpc.testnet.arc.network`)
-- Testnet USDC/EURC/cirBTC from [faucet.circle.com](https://faucet.circle.com)
-
-## Contract source
-
-Solidity source files (`.sol`) for all deployed contracts are included in this repository.
-
-## Feedback welcome
-
-This project is actively evolving. Feedback on the CCTP/Gateway integration in the Bridge module, or on the overall architecture, is very welcome; feel free to open an issue.
+Open to feedback from anyone in the community. This project continues to be improved and updated based on it.
