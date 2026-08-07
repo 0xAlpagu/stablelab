@@ -151,7 +151,8 @@
         <input type="number" id="removeSharesEURC" placeholder="Shares to withdraw" />
         <button class="act" id="btnRemoveLiqEURC">Remove Liquidity</button>
       </div>
-      <div class="stat-line"><span class="k">Your LP shares</span><span class="v" id="myLpEURC">—</span></div>
+      <div class="stat-line"><span class="k">Your pool share</span><span class="v" id="myLpPctEURC">—</span></div>
+      <div class="stat-line"><span class="k">Your withdrawable balance</span><span class="v" id="myLpBalEURC">—</span></div>
       <div class="hint">Add liquidity to earn a share of the 0.3% swap fee. Withdraw your shares any time to get your USDC and EURC back proportionally.</div>
     </div>
   </div>
@@ -186,7 +187,8 @@
         <input type="number" id="removeSharesBTC" placeholder="Shares to withdraw" />
         <button class="act" id="btnRemoveLiqBTC">Remove Liquidity</button>
       </div>
-      <div class="stat-line"><span class="k">Your LP shares</span><span class="v" id="myLpBTC">—</span></div>
+      <div class="stat-line"><span class="k">Your pool share</span><span class="v" id="myLpPctBTC">—</span></div>
+      <div class="stat-line"><span class="k">Your withdrawable balance</span><span class="v" id="myLpBalBTC">—</span></div>
       <div class="hint">Add liquidity to earn a share of the 0.3% swap fee. Withdraw your shares any time to get your USDC and cirBTC back proportionally.</div>
     </div>
   </div>
@@ -199,7 +201,7 @@ const ADDR = {
   USDC:  "0x3600000000000000000000000000000000000000",
   EURC:  "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a",
   cirBTC:"0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF",
-  Swap:  "0x5d9be5D2be16976418e36D4312ba3BF3e9b9d4E0"
+  Swap:  "0x2b91E208152c372e7F2F51e69CE9738DD0Cca784"
 };
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
@@ -207,10 +209,10 @@ const ERC20_ABI = [
   "function allowance(address owner, address spender) view returns (uint256)"
 ];
 const SWAP_ABI = [
-  "function swapUSDCforEURC(uint256 amountIn)",
-  "function swapEURCforUSDC(uint256 amountIn)",
-  "function swapUSDCforBTC(uint256 amountIn)",
-  "function swapBTCforUSDC(uint256 amountIn)",
+  "function swapUSDCforEURC(uint256 amountIn, uint256 minAmountOut)",
+  "function swapEURCforUSDC(uint256 amountIn, uint256 minAmountOut)",
+  "function swapUSDCforBTC(uint256 amountIn, uint256 minAmountOut)",
+  "function swapBTCforUSDC(uint256 amountIn, uint256 minAmountOut)",
   "function addLiquidityEURC(uint256 amountUSDC, uint256 amountEURC)",
   "function removeLiquidityEURC(uint256 shares)",
   "function addLiquidityBTC(uint256 amountUSDC, uint256 amountBTC)",
@@ -271,8 +273,10 @@ function disconnect(){
   document.getElementById('disconnectBtn').style.display = 'none';
   document.getElementById('acctInfo').textContent = '';
   document.getElementById('walletHint').style.display = 'block';
-  document.getElementById('myLpEURC').textContent = '—';
-  document.getElementById('myLpBTC').textContent = '—';
+  document.getElementById('myLpPctEURC').textContent = '—';
+  document.getElementById('myLpBalEURC').textContent = '—';
+  document.getElementById('myLpPctBTC').textContent = '—';
+  document.getElementById('myLpBalBTC').textContent = '—';
   log("Wallet disconnected.", "ok");
 }
 
@@ -350,15 +354,23 @@ async function doSwapEURC(){
   try{
     if(dirEURC === 'toEURC'){
       const wei = toUsdc(amt);
+      const r1 = await swap.reserveUSDC_1();
+      const rE = await swap.reserveEURC();
+      const expectedOut = await swap.getAmountOut(wei, r1, rE);
+      const minOut = expectedOut.mul(99).div(100); // %1 slippage toleransı
       await ensureApproval(usdc, ADDR.Swap, wei);
       log("Sending swap (USDC → EURC)…");
-      const tx = await swap.swapUSDCforEURC(wei);
+      const tx = await swap.swapUSDCforEURC(wei, minOut);
       await tx.wait();
     } else {
       const wei = toEurc(amt);
+      const r1 = await swap.reserveUSDC_1();
+      const rE = await swap.reserveEURC();
+      const expectedOut = await swap.getAmountOut(wei, rE, r1);
+      const minOut = expectedOut.mul(99).div(100);
       await ensureApproval(eurc, ADDR.Swap, wei);
       log("Sending swap (EURC → USDC)…");
-      const tx = await swap.swapEURCforUSDC(wei);
+      const tx = await swap.swapEURCforUSDC(wei, minOut);
       await tx.wait();
     }
     log("Swap successful.", "ok");
@@ -400,15 +412,23 @@ async function doSwapBTC(){
   try{
     if(dirBTC === 'toBTC'){
       const wei = toUsdc(amt);
+      const r2 = await swap.reserveUSDC_2();
+      const rB = await swap.reserveBTC();
+      const expectedOut = await swap.getAmountOut(wei, r2, rB);
+      const minOut = expectedOut.mul(99).div(100);
       await ensureApproval(usdc, ADDR.Swap, wei);
       log("Sending swap (USDC → cirBTC)…");
-      const tx = await swap.swapUSDCforBTC(wei);
+      const tx = await swap.swapUSDCforBTC(wei, minOut);
       await tx.wait();
     } else {
       const wei = toBtc(amt);
+      const r2 = await swap.reserveUSDC_2();
+      const rB = await swap.reserveBTC();
+      const expectedOut = await swap.getAmountOut(wei, rB, r2);
+      const minOut = expectedOut.mul(99).div(100);
       await ensureApproval(cirBTC, ADDR.Swap, wei);
       log("Sending swap (cirBTC → USDC)…");
-      const tx = await swap.swapBTCforUSDC(wei);
+      const tx = await swap.swapBTCforUSDC(wei, minOut);
       await tx.wait();
     }
     log("Swap successful.", "ok");
@@ -420,9 +440,38 @@ async function refreshMyShares(){
   if(!swap || !account) return;
   try{
     const sE = await swap.lpSharesEURC(account);
-    document.getElementById('myLpEURC').textContent = sE.toString();
+    const totalE = await swap.totalSharesEURC();
+    const pctElE = document.getElementById('myLpPctEURC');
+    const balElE = document.getElementById('myLpBalEURC');
+    if(sE.isZero() || totalE.isZero()){
+      pctElE.textContent = "—";
+      balElE.textContent = "—";
+    } else {
+      const pctE = (Number(sE) / Number(totalE) * 100).toFixed(2);
+      const r1 = await swap.reserveUSDC_1();
+      const rE = await swap.reserveEURC();
+      const myUsdc = sE.mul(r1).div(totalE);
+      const myEurc = sE.mul(rE).div(totalE);
+      pctElE.textContent = pctE + "%";
+      balElE.textContent = fmt6(myUsdc) + " USDC + " + fmt6(myEurc) + " EURC";
+    }
+
     const sB = await swap.lpSharesBTC(account);
-    document.getElementById('myLpBTC').textContent = sB.toString();
+    const totalB = await swap.totalSharesBTC();
+    const pctElB = document.getElementById('myLpPctBTC');
+    const balElB = document.getElementById('myLpBalBTC');
+    if(sB.isZero() || totalB.isZero()){
+      pctElB.textContent = "—";
+      balElB.textContent = "—";
+    } else {
+      const pctB = (Number(sB) / Number(totalB) * 100).toFixed(2);
+      const r2 = await swap.reserveUSDC_2();
+      const rB = await swap.reserveBTC();
+      const myUsdc2 = sB.mul(r2).div(totalB);
+      const myBtc = sB.mul(rB).div(totalB);
+      pctElB.textContent = pctB + "%";
+      balElB.textContent = fmt6(myUsdc2) + " USDC + " + fmt8(myBtc) + " cirBTC";
+    }
   }catch(e){ console.error(e); }
 }
 
