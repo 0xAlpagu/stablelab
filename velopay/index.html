@@ -165,12 +165,12 @@
       </div>
       <div class="row">
         <input type="number" id="veloFaceValue" placeholder="Invoice amount (USDC)" />
-        <input type="date" id="veloDueDate" />
+        <input type="date" id="veloDueDate" lang="en-US" />
         <button class="act primary" id="btnCreateInvoice">Create Invoice</button>
       </div>
       <div class="hint">The moment you create it, 97% of the amount is sent to your wallet.</div>
-      <div class="stat-line"><span class="k">You'll receive instantly (97%)</span><span class="v" id="veloAdvancePreview">—</span></div>
-      <div class="stat-line"><span class="k">Platform fee on repayment (0.5%)</span><span class="v" id="veloFeePreview">—</span></div>
+      <div class="stat-line"><span class="k">You'll receive instantly (97%)</span><span class="v" id="veloAdvancePreview">-</span></div>
+      <div class="stat-line"><span class="k">Platform fee on repayment (0.5%)</span><span class="v" id="veloFeePreview">-</span></div>
     </div>
   </div>
 
@@ -183,8 +183,8 @@
         <button class="act primary" id="btnVeloRepay">Make Payment</button>
         <button class="act" id="btnVeloDefault">Mark Defaulted</button>
       </div>
-      <div class="stat-line"><span class="k">Currently amount due</span><span class="v" id="veloAmountDue">—</span></div>
-      <div class="stat-line"><span class="k">Invoice status</span><span class="v" id="veloStatus">—</span></div>
+      <div class="stat-line"><span class="k">Currently amount due</span><span class="v" id="veloAmountDue">-</span></div>
+      <div class="stat-line"><span class="k">Invoice status</span><span class="v" id="veloStatus">-</span></div>
       <div class="hint">If overdue, a 0.1% daily late fee is calculated automatically. If unpaid 7 days past due, it can be marked defaulted.</div>
     </div>
   </div>
@@ -221,7 +221,7 @@ function log(msg, type){
   clearTimeout(window.__t);
   window.__t = setTimeout(()=>{ el.className=''; }, 10000);
 }
-function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 6)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
+function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 6)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "-"; } }
 function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 6); }
 
 async function connect(){
@@ -353,7 +353,7 @@ function updateVeloFeePreview(){
   const amt = Number(document.getElementById('veloFaceValue').value);
   const advEl = document.getElementById('veloAdvancePreview');
   const feeEl = document.getElementById('veloFeePreview');
-  if(!amt || amt <= 0){ advEl.textContent = '—'; feeEl.textContent = '—'; return; }
+  if(!amt || amt <= 0){ advEl.textContent = '-'; feeEl.textContent = '-'; return; }
   const advance = amt * 0.97;
   const fee = amt * 0.005;
   advEl.textContent = advance.toLocaleString('en-US', {maximumFractionDigits: 6}) + " USDC";
