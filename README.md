@@ -1,4 +1,4 @@
-[README.md](https://github.com/user-attachments/files/30856981/README.md)
+[README.md](https://github.com/user-attachments/files/30863944/README.md)
 # StableLab
 
 A suite of stablecoin-native DeFi and payment tools deployed on Arc Testnet, built entirely on real Arc-issued assets: USDC, EURC, and cirBTC.
@@ -8,7 +8,7 @@ A suite of stablecoin-native DeFi and payment tools deployed on Arc Testnet, bui
 
 ## Overview
 
-StableLab is a suite of eight interoperable modules spanning core DeFi primitives and treasury/payment tools. Each module is an independent, standalone smart contract; they are not wired together through a shared settlement or accounting layer. They are best thought of as a coordinated set of tools built on the same asset base (USDC, EURC, cirBTC) rather than a single unified system.
+StableLab is a suite of seven interoperable modules spanning core DeFi primitives and treasury/payment tools. Each module is an independent, standalone smart contract; they are not wired together through a shared settlement or accounting layer. They are best thought of as a coordinated set of tools built on the same asset base (USDC, EURC, cirBTC) rather than a single unified system.
 
 The project demonstrates what Arc's stablecoin-optimized infrastructure can support when you build across the full stack Circle provides: USDC as the settlement asset, CCTP for cross-chain liquidity, Gateway for unified balances, and Circle Wallets for onboarding.
 
@@ -39,14 +39,11 @@ Arbiter-based escrow. Release requires depositor or arbiter action. Refund requi
 **VaultGuard**
 Multi-signer shared treasury with configurable approval thresholds. Signer membership and confirmation threshold can be updated after deployment. A 0.2% fee applies on executed transfers.
 
-**VeloPay**
-Invoice factoring. A freelancer or SME uploads an unpaid invoice and receives 97% of its face value immediately from a shared liquidity pool. The debtor repays the full amount later, with a 0.5% platform fee on repayment.
-
 Each treasury module surfaces its fee breakdown live in the interface before a transaction is submitted.
 
 ## Circle Stack Integration
 
-**USDC** as the settlement asset across all eight modules, alongside EURC and cirBTC where relevant.
+**USDC** as the settlement asset across all seven modules, alongside EURC and cirBTC where relevant.
 
 **CCTP**, via Circle App Kit, for genuine cross-chain USDC transfer into Arc.
 
@@ -59,7 +56,7 @@ Each treasury module surfaces its fee breakdown live in the interface before a t
 StableLab is a static site (plain HTML, CSS, and JavaScript, with ethers.js loaded from a CDN). There is no build step and no npm install required for the core DeFi modules.
 
 **Running the core modules locally or on GitHub Pages**
-Clone the repo and serve the files with any static file server. Connect an EVM wallet (Rabby or MetaMask) to Arc Network Testnet (chain ID 5042002) and the Staking, Lending, Swap, Bridge, FlowPay, TrustLock, VaultGuard, and VeloPay modules work directly against the deployed contracts.
+Clone the repo and serve the files with any static file server. Connect an EVM wallet (Rabby or MetaMask) to Arc Network Testnet (chain ID 5042002) and the Staking, Lending, Swap, Bridge, FlowPay, TrustLock, and VaultGuard modules work directly against the deployed contracts.
 
 **Running Circle Wallets locally**
 The `/wallet/` module needs a server-held API credential, so it only works when deployed with serverless functions (this repo is deployed on Vercel for that reason). To run it yourself:
@@ -95,18 +92,21 @@ Uses `@circle-fin/w3s-pw-web-sdk`, loaded via jsdelivr as an ES module, with App
 | FlowPay (streaming) | `0x7e57100bb7e942Ee10F99aCbf0e6Fd282b220A3B` |
 | TrustLock (escrow) | `0x8BBdE5DeA50C370b116efda19c2554BCF64Dac8c` |
 | VaultGuard (multi-sig) | `0x410862a8d468028D777Df00368D652922054ae2E` |
-| VeloPay (invoice factoring) | `0x7be5cE722405A1d965c8e8E81535B74Eb5D0Ef47` |
 
 ## Site Structure
 
 ```
 /staking/   /lending/   /swap/      /streaming/
-/escrow/    /multisig/  /velopay/   /bridge/
-/wallet/    /core/      /treasury/  /about/
-/pricing/   /contact/
+/escrow/    /multisig/  /bridge/    /wallet/
+/core/      /treasury/  /about/     /pricing/
+/contact/
 ```
 
 Deployed on both GitHub Pages (static) and Vercel (adds serverless functions for Circle Wallets authentication).
+
+## Known Limitations
+
+**VeloPay (invoice factoring) has been discontinued.** During testing, we found that the invoice creation flow accepted any debtor address and face value without verifying the debtor's consent or the existence of a real receivable. This allowed the liquidity pool to be drained by creating invoices against invented debts. Rather than leave this live, the module has been taken down (the `/velopay/` page and all navigation links have been removed) while it is redesigned around real debtor confirmation. The other seven modules do not share this issue and remain fully functional.
 
 ## Status
 
