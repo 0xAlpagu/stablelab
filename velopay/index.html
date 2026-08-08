@@ -165,7 +165,7 @@
       </div>
       <div class="row">
         <input type="number" id="veloFaceValue" placeholder="Invoice amount (USDC)" />
-        <input type="date" id="veloDueDate" lang="en-US" />
+        <input type="text" id="veloDueDate" placeholder="MM/DD/YYYY" inputmode="numeric" maxlength="10" autocomplete="off" />
         <button class="act primary" id="btnCreateInvoice">Create Invoice</button>
       </div>
       <div class="hint">The moment you create it, 97% of the amount is sent to your wallet.</div>
@@ -283,7 +283,11 @@ async function doCreateInvoice(){
   if(!faceValue || Number(faceValue) <= 0 || !dueDate){ log("Enter a valid amount and due date.", "err"); return; }
   try{
     log("Creating invoice…");
-    const dueDateUnix = Math.floor(new Date(dueDate + "T00:00:00Z").getTime() / 1000);
+    const dp = dueDate.split("/");
+    if(dp.length !== 3){ log("Enter the date as MM/DD/YYYY.", "err"); return; }
+    const isoDate = dp[2] + "-" + dp[0].padStart(2,"0") + "-" + dp[1].padStart(2,"0");
+    const dueDateUnix = Math.floor(new Date(isoDate + "T00:00:00Z").getTime() / 1000);
+    if(isNaN(dueDateUnix)){ log("Enter a valid date as MM/DD/YYYY.", "err"); return; }
     const tx = await velopay.createInvoice(debtor, toWei(faceValue), dueDateUnix);
     const receipt = await tx.wait();
 
@@ -345,7 +349,6 @@ async function doVeloDefault(){
   }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
 
-document.getElementById('veloDueDate').min = new Date().toISOString().slice(0, 10);
 document.getElementById('connectBtn').addEventListener('click', connect);
 document.getElementById('disconnectBtn').addEventListener('click', disconnect);
 document.getElementById('btnVeloAddLiq').addEventListener('click', doVeloAddLiq);
@@ -364,6 +367,15 @@ document.getElementById('btnCreateInvoice').addEventListener('click', doCreateIn
 document.getElementById('btnVeloCheck').addEventListener('click', doVeloCheck);
 document.getElementById('btnVeloRepay').addEventListener('click', doVeloRepay);
 document.getElementById('btnVeloDefault').addEventListener('click', doVeloDefault);
+
+document.getElementById('veloDueDate').addEventListener('input', function(e){
+  let v = e.target.value.replace(/[^0-9]/g, '');
+  if(v.length > 8) v = v.slice(0, 8);
+  let out = v;
+  if(v.length > 2) out = v.slice(0,2) + '/' + v.slice(2);
+  if(v.length > 4) out = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
+  e.target.value = out;
+});
 
 /* ---------- Auto-reconnect ---------- */
 (async function(){
