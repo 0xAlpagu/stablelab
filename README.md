@@ -1,4 +1,4 @@
-[README.md](https://github.com/user-attachments/files/30842237/README.md)
+[README.md](https://github.com/user-attachments/files/30856981/README.md)
 # StableLab
 
 A suite of stablecoin-native DeFi and payment tools deployed on Arc Testnet, built entirely on real Arc-issued assets: USDC, EURC, and cirBTC.
@@ -53,6 +53,32 @@ Each treasury module surfaces its fee breakdown live in the interface before a t
 **Circle Gateway**, via App Kit's Unified Balance, for combining USDC held across chains into a single spendable balance on Arc.
 
 **Circle Wallets** (User-Controlled), giving users a working Arc wallet from an email address and PIN, with no browser extension or seed phrase.
+
+## Setup
+
+StableLab is a static site (plain HTML, CSS, and JavaScript, with ethers.js loaded from a CDN). There is no build step and no npm install required for the core DeFi modules.
+
+**Running the core modules locally or on GitHub Pages**
+Clone the repo and serve the files with any static file server. Connect an EVM wallet (Rabby or MetaMask) to Arc Network Testnet (chain ID 5042002) and the Staking, Lending, Swap, Bridge, FlowPay, TrustLock, VaultGuard, and VeloPay modules work directly against the deployed contracts.
+
+**Running Circle Wallets locally**
+The `/wallet/` module needs a server-held API credential, so it only works when deployed with serverless functions (this repo is deployed on Vercel for that reason). To run it yourself:
+1. Deploy the repo to Vercel.
+2. Set the environment variable `CIRCLE_API_KEY` to a Circle test API key, keeping the `TEST_API_KEY:` prefix included.
+3. The `/wallet/` page will call the serverless function, which brokers Circle Wallets authentication server-side.
+
+The GitHub Pages mirror does not include the serverless backend, so `/wallet/` will not work there. It works only on the Vercel deployment.
+
+## Circle Integration Details
+
+**CCTP (Bridge)**
+Uses Circle's App Kit SDK, loaded via jsdelivr as an ES module. The bridge calls `kit.getSupportedChains("bridge")` to pull the live list of supported source chains and their USDC contract addresses at runtime, rather than hardcoding a chain list. Roughly 22 EVM testnets are covered.
+
+**Circle Gateway (Unified Balance)**
+Same App Kit SDK, using `kit.getSupportedChains("unifiedBalance")` to combine USDC held across multiple chains into a single spendable balance on Arc.
+
+**Circle Wallets (User-Controlled)**
+Uses `@circle-fin/w3s-pw-web-sdk`, loaded via jsdelivr as an ES module, with App ID `bbd478e6-cd6c-5d48-924b-b5f29af26638` and `blockchains: ["ARC-TESTNET"]`. Because wallet creation requires a server-held API credential, a thin Vercel serverless function holds the `CIRCLE_API_KEY` and brokers the authentication step. The client never sees the API key directly.
 
 ## Contracts (Arc Testnet)
 
