@@ -487,7 +487,6 @@
             <a href="./streaming/" data-i18n="streamTitle" data-tip="Pay salaries or subscriptions as a continuous flow, not a lump sum. Great for remote teams who want to get paid as they work."></a>
             <a href="./escrow/" data-i18n="escrowTitle" data-tip="Lock funds for a deal and release them only once the agreed work is done, with an arbiter for disputes."></a>
             <a href="./multisig/" data-i18n="msigTitle" data-tip="Require multiple approvals before funds leave a shared vault. No single signer can move money alone."></a>
-            <a href="./velopay/" data-i18n="veloTitle" data-tip="Upload an unpaid invoice, get 97% of it in your wallet within seconds. Instant pay for freelancers and remote workers instead of waiting 30-60 days."></a>
           </div>
         </div>
       </div>
@@ -566,12 +565,6 @@
       <div class="carousel-eyebrow" data-i18n="c5eyebrow"></div>
       <div class="carousel-headline" data-i18n="c5headline"></div>
       <div class="carousel-desc" data-i18n="c5desc"></div>
-    </a>
-    <a class="carousel-slide" href="./velopay/" data-slide="6">
-      <div class="carousel-icon" style="background:#d3762c;">🧾</div>
-      <div class="carousel-eyebrow" data-i18n="c6eyebrow"></div>
-      <div class="carousel-headline" data-i18n="c6headline"></div>
-      <div class="carousel-desc" data-i18n="c6desc"></div>
     </a>
     <div class="carousel-controls">
       <button class="carousel-arrow" id="carouselPrev">←</button>
@@ -1759,7 +1752,6 @@ document.querySelectorAll('.group-menu').forEach(menu => {
     { icon: "💸", name: "FlowPay", href: "./streaming/" },
     { icon: "🔒", name: "TrustLock", href: "./escrow/" },
     { icon: "🛡️", name: "VaultGuard", href: "./multisig/" },
-    { icon: "🧾", name: "VeloPay", href: "./velopay/" },
     { icon: "🌉", name: "Bridge", href: "./bridge/" }
   ];
   const html = items.map(it => '<a class="marquee-item" href="' + it.href + '"><span class="mq-icon">' + it.icon + '</span>' + it.name + '</a>').join('');
@@ -1797,7 +1789,6 @@ window.addEventListener('resize', stretchLogo);
     { kw:['flowpay','streaming','payroll','salary','salaries'], text:"FlowPay lets you pay salaries or subscriptions as a continuous flow instead of a lump sum. Recipients can withdraw what they've earned at any moment.", href:'./streaming/', label:'Open FlowPay' },
     { kw:['trustlock','escrow','arbiter','dispute'], text:"TrustLock locks funds for a deal and only releases them once the agreed condition is met. An arbiter can resolve disputes fairly if the two sides don't agree.", href:'./escrow/', label:'Open TrustLock' },
     { kw:['vaultguard','multisig','multi-sig','vault','signer'], text:"VaultGuard requires multiple approvals before any fund leaves a shared vault. A single compromised signer can never move money alone.", href:'./multisig/', label:'Open VaultGuard' },
-    { kw:['velopay','invoice','factoring','freelanc'], text:"VeloPay lets you upload an unpaid invoice and receive 97% of its value in your wallet within seconds, instead of waiting 30-60 days for your client to pay.", href:'./velopay/', label:'Open VeloPay' },
     { kw:['faucet','test token','free token','get token'], text:"You can claim free testnet USDC, EURC, and cirBTC directly from Circle's official faucet using the \"Get Test Tokens\" button at the top of the page." },
     { kw:['bridge','cctp','cross-chain','crosschain'], text:"Bridge lets you bring USDC to Arc from another testnet chain using Circle's CCTP, or combine balances across chains with Circle's Unified Balance.", href:'./bridge/', label:'Open Bridge' },
     { kw:['circle wallet','embedded wallet','no wallet','create wallet','email wallet'], text:"Don't have a crypto wallet yet? Create one instantly with just an email and a PIN, powered by Circle's Programmable Wallets.", href:'./wallet/', label:'Open Wallet' },
