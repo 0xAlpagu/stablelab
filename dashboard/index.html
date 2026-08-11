@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard · StableLab</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#f5f7fa; --surface:#ffffff; --surface-alt:#eef2f8; --border:#dde3ec;
+    --text:#0f1b2d; --text-mute:#5b6b82; --text-faint:#8a97ab;
+    --primary:#2f5fe0; --primary-dark:#1e3fa8; --primary-soft:#e8edfc;
+    --ok:#0f9d58; --err:#d33b2c; --radius:10px;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: "SF Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--text); font-family:var(--sans); font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+  .wrap{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
+  .brand-back{ display:inline-flex; align-items:baseline; gap:8px; text-decoration:none; margin-bottom:24px; }
+  .brand-back .logo{ font-family:var(--sans); font-weight:800; font-size:40px; color:var(--text); letter-spacing:-0.015em; }
+  .brand-back .logo .slash{ color:var(--primary); }
+  .brand-back .hint{ font-size:11px; color:var(--text-faint); font-weight:600; transition:color .15s; }
+  .brand-back:hover .hint{ color:var(--primary); }
+
+  .hero{ margin-bottom:24px; }
+  .eyebrow{ font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--primary); margin-bottom:8px; }
+  h1{ font-size:30px; font-weight:800; margin:0 0 8px; letter-spacing:-0.02em; }
+  .lede{ font-size:14px; color:var(--text-mute); line-height:1.6; max-width:70ch; }
+
+  #connectBtn{ font-family:var(--sans); font-weight:600; font-size:13px; background:var(--primary); color:#fff; border:none; border-radius:8px; padding:10px 18px; cursor:pointer; }
+  #connectBtn:hover{ background:var(--primary-dark); }
+  #connectBtn:disabled{ opacity:.6; }
+  .act{ font-family:var(--sans); font-size:12.5px; font-weight:600; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:9px 14px; cursor:pointer; }
+  .act:hover{ background:var(--surface-alt); border-color:var(--primary); }
+  .acct{ font-size:11.5px; color:var(--text-mute); font-family:var(--mono); margin-top:6px; }
+
+  .section-label{ font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin:28px 0 10px; }
+  .section-label:first-of-type{ margin-top:20px; }
+
+  .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+  .balcell{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:14px 16px; box-shadow:0 1px 2px rgba(15,27,45,0.04);
+  }
+  .balcell .lbl{ font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); font-weight:600; }
+  .balcell .val{ font-family:var(--sans); font-size:20px; font-weight:700; margin-top:6px; color:var(--text); letter-spacing:-0.01em; }
+  .balcell a.open-link{ display:block; margin-top:8px; font-size:11px; color:var(--primary); font-weight:700; text-decoration:none; }
+  .balcell a.open-link:hover{ text-decoration:underline; }
+
+  .activity-list{ border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); overflow:hidden; }
+  .activity-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:12px 16px; border-bottom:1px solid var(--surface-alt); font-size:12.5px;
+  }
+  .activity-row:last-child{ border-bottom:none; }
+  .activity-row .module-tag{
+    font-size:10px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    padding:3px 8px; border-radius:6px; background:var(--primary-soft); color:var(--primary-dark); flex-shrink:0;
+  }
+  .activity-row .desc{ color:var(--text); flex:1; }
+  .activity-row .time{ color:var(--text-faint); font-family:var(--mono); font-size:11px; flex-shrink:0; }
+  .activity-empty{ padding:24px; text-align:center; color:var(--text-faint); font-size:13px; }
+
+  .quicklinks{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; }
+  .quicklink{
+    display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:12px 14px; text-decoration:none; color:var(--text);
+    font-size:13px; font-weight:600; transition:border-color .12s, background .12s;
+  }
+  .quicklink:hover{ border-color:var(--primary); background:var(--surface-alt); }
+  .quicklink .ic{ font-size:16px; }
+
+  .hint{ font-size:11.5px; color:var(--text-faint); margin-top:10px; }
+
+  #log{ position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:var(--text); color:#fff; border-radius:8px; font-size:12.5px; padding:11px 20px; display:none; z-index:50; box-shadow:0 4px 16px rgba(15,27,45,0.25); max-width:90vw; }
+  #log.show{display:block;}
+  #log.err{background:var(--err);}
+  #log.ok{background:var(--ok);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand-back" href="../">
+    <span class="logo">Stable<span class="slash">Lab</span></span>
+    <span class="hint">← Click for homepage</span>
+  </a>
+
+  <div class="hero">
+    <div class="eyebrow">StableLab · Dashboard</div>
+    <h1>Everything in one place</h1>
+    <div class="lede">Your wallet balances, positions across every module, and recent activity, all in a single view.</div>
+  </div>
+
+  <div style="margin-bottom:8px;">
+    <button id="connectBtn">Connect Wallet</button>
+    <button id="disconnectBtn" class="act" style="display:none;">Disconnect</button>
+    <button id="btnRefreshAll" class="act" style="display:none;">Refresh</button>
+    <div class="acct" id="acctInfo"></div>
+  </div>
+
+  <div class="section-label">Wallet balances</div>
+  <div class="grid" id="walletGrid">
+    <div class="balcell"><div class="lbl">USDC</div><div class="val" id="balUSDC">—</div></div>
+    <div class="balcell"><div class="lbl">EURC</div><div class="val" id="balEURC">—</div></div>
+    <div class="balcell"><div class="lbl">cirBTC</div><div class="val" id="balCirBTC">—</div></div>
+  </div>
+
+  <div class="section-label">Positions</div>
+  <div class="grid" id="positionsGrid">
+    <div class="balcell">
+      <div class="lbl">Staking</div>
+      <div class="val" id="posStaked">—</div>
+      <a class="open-link" href="../staking/">Open Staking →</a>
+    </div>
+    <div class="balcell">
+      <div class="lbl">Staking reward</div>
+      <div class="val" id="posReward">—</div>
+      <a class="open-link" href="../staking/">Open Staking →</a>
+    </div>
+    <div class="balcell">
+      <div class="lbl">Lending debt</div>
+      <div class="val" id="posDebt">—</div>
+      <a class="open-link" href="../lending/">Open Lending →</a>
+    </div>
+    <div class="balcell">
+      <div class="lbl">Lending collateral</div>
+      <div class="val" id="posCollateral">—</div>
+      <a class="open-link" href="../lending/">Open Lending →</a>
+    </div>
+    <div class="balcell">
+      <div class="lbl">Swap LP share (EURC pool)</div>
+      <div class="val" id="posLpEurc">—</div>
+      <a class="open-link" href="../swap/">Open Swap →</a>
+    </div>
+    <div class="balcell">
+      <div class="lbl">Swap LP share (cirBTC pool)</div>
+      <div class="val" id="posLpBtc">—</div>
+      <a class="open-link" href="../swap/">Open Swap →</a>
+    </div>
+  </div>
+
+  <div class="section-label">Recent activity</div>
+  <div class="activity-list" id="activityList">
+    <div class="activity-empty">Connect your wallet to see your recent activity across TrustLock, FlowPay, VaultGuard, and BulkPay.</div>
+  </div>
+  <div class="hint">Amounts on encrypted modules are not shown here for privacy; open the module to decrypt with your passphrase.</div>
+
+  <div class="section-label">All modules</div>
+  <div class="quicklinks">
+    <a class="quicklink" href="../staking/"><span class="ic">🪙</span>Staking</a>
+    <a class="quicklink" href="../lending/"><span class="ic">🏦</span>Lending</a>
+    <a class="quicklink" href="../swap/"><span class="ic">🔁</span>Swap</a>
+    <a class="quicklink" href="../streaming/"><span class="ic">💸</span>FlowPay</a>
+    <a class="quicklink" href="../escrow/"><span class="ic">🔒</span>TrustLock</a>
+    <a class="quicklink" href="../multisig/"><span class="ic">🛡️</span>VaultGuard</a>
+    <a class="quicklink" href="../bulk/"><span class="ic">📦</span>BulkPay</a>
+    <a class="quicklink" href="../bridge/"><span class="ic">🌉</span>Bridge</a>
+  </div>
+</div>
+
+<div id="log"></div>
+
+<script>
+const ADDR = {
+  USDC:     "0x3600000000000000000000000000000000000000",
+  EURC:     "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a",
+  cirBTC:   "0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF",
+  Staking:  "0x35F2E254c71394f923B6Ac2Aead20beAf41573E5",
+  Lending:  "0x7d1cb2D60523c557f1FcCd2ffa8FbADC00C1C1bC",
+  Swap:     "0x2b91E208152c372e7F2F51e69CE9738DD0Cca784",
+  TrustLock:"0x8f82FEff8621A20cBcE474fBe0c74b3335e5BC69",
+  FlowPay:  "0x8e74FfdB734a3AfA50dB75d54762B89db1DcADcA",
+  VaultGuard:"0x992369C19ff315f87c47Cc0512a215F2BdBAA1A1",
+  BulkPay:  "0xecEdCeA9f40f07311FC4482C7743D7df6F1eB817"
+};
+const ERC20_ABI = ["function balanceOf(address) view returns (uint256)"];
+const STAKING_ABI = [
+  "function stakedBalance(address) view returns (uint256)",
+  "function calculateReward(address) view returns (uint256)"
+];
+const LENDING_ABI = [
+  "function collateralValueInUSDC(address) view returns (uint256)",
+  "function borrowedBalance(address) view returns (uint256)"
+];
+const SWAP_ABI = [
+  "function lpSharesEURC(address) view returns (uint256)",
+  "function totalSharesEURC() view returns (uint256)",
+  "function lpSharesBTC(address) view returns (uint256)",
+  "function totalSharesBTC() view returns (uint256)"
+];
+const TRUSTLOCK_ABI = [
+  "event DealCreated(uint256 indexed dealId, address indexed depositor, address indexed beneficiary, address arbiter, uint256 timestamp)"
+];
+const FLOWPAY_ABI = [
+  "event StreamCreated(uint256 indexed streamId, address indexed sender, address indexed recipient, uint256 startTime, uint256 endTime)"
+];
+const VAULTGUARD_ABI = [
+  "event ProposalCreated(uint256 indexed proposalId, address indexed to, uint256 timestamp)"
+];
+const BULKPAY_ABI = [
+  "event BulkExecuted(address indexed sender, uint256 recipientCount, uint256 totalAmount, uint256 timestamp)"
+];
+
+let provider, signer, account;
+
+function log(msg, type){
+  const el = document.getElementById('log');
+  el.textContent = msg;
+  el.className = 'show' + (type ? ' ' + type : '');
+  clearTimeout(window.__t);
+  window.__t = setTimeout(()=>{ el.className=''; }, 8000);
+}
+function fmt6(bn){ try{ return Number(ethers.utils.formatUnits(bn, 6)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
+function fmt8(bn){ try{ return Number(ethers.utils.formatUnits(bn, 8)).toLocaleString('en-US', {maximumFractionDigits: 6}); }catch(e){ return "—"; } }
+function shortAddr(a){ return a.slice(0,6) + "…" + a.slice(-4); }
+function timeAgo(unixSeconds){
+  const diff = Math.floor(Date.now()/1000) - unixSeconds;
+  if(diff < 60) return "just now";
+  if(diff < 3600) return Math.floor(diff/60) + "m ago";
+  if(diff < 86400) return Math.floor(diff/3600) + "h ago";
+  return Math.floor(diff/86400) + "d ago";
+}
+
+async function connect(){
+  if(!window.ethereum){ log("No wallet extension found (Rabby/MetaMask).", "err"); return; }
+  try{
+    provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    await provider.send("eth_requestAccounts", []);
+    signer = provider.getSigner();
+    account = await signer.getAddress();
+    document.getElementById('acctInfo').textContent = shortAddr(account);
+    document.getElementById('connectBtn').textContent = "Connected";
+    document.getElementById('connectBtn').disabled = true;
+    document.getElementById('disconnectBtn').style.display = 'inline-block';
+    document.getElementById('btnRefreshAll').style.display = 'inline-block';
+    await refreshAll();
+  }catch(e){ log("Connection error: " + (e.message || e), "err"); }
+}
+function disconnect(){
+  provider = null; signer = null; account = null;
+  document.getElementById('connectBtn').textContent = "Connect Wallet";
+  document.getElementById('connectBtn').disabled = false;
+  document.getElementById('disconnectBtn').style.display = 'none';
+  document.getElementById('btnRefreshAll').style.display = 'none';
+  document.getElementById('acctInfo').textContent = '';
+  log("Wallet disconnected.", "ok");
+}
+
+async function refreshWalletBalances(){
+  try{
+    const usdc = new ethers.Contract(ADDR.USDC, ERC20_ABI, provider);
+    const eurc = new ethers.Contract(ADDR.EURC, ERC20_ABI, provider);
+    const btc = new ethers.Contract(ADDR.cirBTC, ERC20_ABI, provider);
+    const [bU, bE, bB] = await Promise.all([usdc.balanceOf(account), eurc.balanceOf(account), btc.balanceOf(account)]);
+    document.getElementById('balUSDC').textContent = fmt6(bU);
+    document.getElementById('balEURC').textContent = fmt6(bE);
+    document.getElementById('balCirBTC').textContent = fmt8(bB);
+  }catch(e){ console.error(e); }
+}
+
+async function refreshPositions(){
+  try{
+    const staking = new ethers.Contract(ADDR.Staking, STAKING_ABI, provider);
+    const [staked, reward] = await Promise.all([staking.stakedBalance(account), staking.calculateReward(account)]);
+    document.getElementById('posStaked').textContent = fmt6(staked) + " USDC";
+    document.getElementById('posReward').textContent = fmt6(reward) + " USDC";
+  }catch(e){ document.getElementById('posStaked').textContent = "unavailable"; }
+
+  try{
+    const lending = new ethers.Contract(ADDR.Lending, LENDING_ABI, provider);
+    const [debt, collValue] = await Promise.all([lending.borrowedBalance(account), lending.collateralValueInUSDC(account)]);
+    document.getElementById('posDebt').textContent = fmt6(debt) + " USDC";
+    document.getElementById('posCollateral').textContent = fmt6(collValue) + " USDC";
+  }catch(e){ document.getElementById('posDebt').textContent = "unavailable"; }
+
+  try{
+    const swap = new ethers.Contract(ADDR.Swap, SWAP_ABI, provider);
+    const [myE, totE, myB, totB] = await Promise.all([
+      swap.lpSharesEURC(account), swap.totalSharesEURC(),
+      swap.lpSharesBTC(account), swap.totalSharesBTC()
+    ]);
+    const pctE = totE.gt(0) ? (Number(myE) * 100 / Number(totE)) : 0;
+    const pctB = totB.gt(0) ? (Number(myB) * 100 / Number(totB)) : 0;
+    document.getElementById('posLpEurc').textContent = pctE > 0 ? pctE.toFixed(3) + "%" : "no position";
+    document.getElementById('posLpBtc').textContent = pctB > 0 ? pctB.toFixed(3) + "%" : "no position";
+  }catch(e){ document.getElementById('posLpEurc').textContent = "unavailable"; }
+}
+
+async function refreshActivity(){
+  const list = document.getElementById('activityList');
+  list.innerHTML = '<div class="activity-empty">Loading…</div>';
+  try{
+    const trustlock = new ethers.Contract(ADDR.TrustLock, TRUSTLOCK_ABI, provider);
+    const flowpay = new ethers.Contract(ADDR.FlowPay, FLOWPAY_ABI, provider);
+    const vaultguard = new ethers.Contract(ADDR.VaultGuard, VAULTGUARD_ABI, provider);
+    const bulkpay = new ethers.Contract(ADDR.BulkPay, BULKPAY_ABI, provider);
+
+    const [dealsD, dealsB, streamsS, streamsR, proposals, bulks] = await Promise.all([
+      trustlock.queryFilter(trustlock.filters.DealCreated(null, account), -50000),
+      trustlock.queryFilter(trustlock.filters.DealCreated(null, null, account), -50000),
+      flowpay.queryFilter(flowpay.filters.StreamCreated(null, account), -50000),
+      flowpay.queryFilter(flowpay.filters.StreamCreated(null, null, account), -50000),
+      vaultguard.queryFilter(vaultguard.filters.ProposalCreated(null, account), -50000),
+      bulkpay.queryFilter(bulkpay.filters.BulkExecuted(account), -50000)
+    ]);
+
+    let items = [];
+    dealsD.forEach(e => items.push({ tag: "TrustLock", desc: "You created a deal with " + shortAddr(e.args.beneficiary), ts: e.args.timestamp.toNumber() }));
+    dealsB.forEach(e => items.push({ tag: "TrustLock", desc: shortAddr(e.args.depositor) + " created a deal with you", ts: e.args.timestamp.toNumber() }));
+    streamsS.forEach(e => items.push({ tag: "FlowPay", desc: "You started a stream to " + shortAddr(e.args.recipient), ts: e.args.startTime.toNumber() }));
+    streamsR.forEach(e => items.push({ tag: "FlowPay", desc: shortAddr(e.args.sender) + " started a stream to you", ts: e.args.startTime.toNumber() }));
+    proposals.forEach(e => items.push({ tag: "VaultGuard", desc: "You proposed a transfer to " + shortAddr(e.args.to), ts: e.args.timestamp.toNumber() }));
+    bulks.forEach(e => items.push({ tag: "BulkPay", desc: "You sent a bulk payment to " + e.args.recipientCount.toString() + " recipients", ts: e.args.timestamp.toNumber() }));
+
+    items.sort((a, b) => b.ts - a.ts);
+    items = items.slice(0, 12);
+
+    if(items.length === 0){
+      list.innerHTML = '<div class="activity-empty">No activity yet across TrustLock, FlowPay, VaultGuard, or BulkPay.</div>';
+      return;
+    }
+
+    list.innerHTML = "";
+    items.forEach(it => {
+      const row = document.createElement('div');
+      row.className = 'activity-row';
+      row.innerHTML = `<span class="module-tag">${it.tag}</span><span class="desc">${it.desc}</span><span class="time">${timeAgo(it.ts)}</span>`;
+      list.appendChild(row);
+    });
+  }catch(e){
+    list.innerHTML = '<div class="activity-empty">Activity feed unavailable right now.</div>';
+    console.error(e);
+  }
+}
+
+async function refreshAll(){
+  if(!account) return;
+  await Promise.all([refreshWalletBalances(), refreshPositions(), refreshActivity()]);
+}
+
+document.getElementById('connectBtn').addEventListener('click', connect);
+document.getElementById('disconnectBtn').addEventListener('click', disconnect);
+document.getElementById('btnRefreshAll').addEventListener('click', refreshAll);
+
+/* ---------- Auto-reconnect ---------- */
+(async function(){
+  if(!window.ethereum) return;
+  try{
+    const accs = await window.ethereum.request({ method: 'eth_accounts' });
+    if(accs && accs.length){ await connect(); }
+  }catch(e){ console.error(e); }
+})();
+</script>
+</body>
+</html>
