@@ -26,8 +26,14 @@
 
   .hero{ margin-bottom:28px; }
   .eyebrow{ font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--primary); margin-bottom:8px; }
-  h1{ font-size:32px; font-weight:800; margin:0 0 10px; letter-spacing:-0.02em; text-align:justify; }
-  .lede{ font-size:14.5px; color:var(--text-mute); max-width:none; line-height:1.65; text-align:justify; }
+  h1{ font-size:32px; font-weight:800; margin:0 0 10px; letter-spacing:-0.02em; }
+  .lede{ font-size:14.5px; color:var(--text-mute); max-width:none; line-height:1.65; }
+
+  .privacy-badge{
+    display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700;
+    color:var(--primary-dark); background:var(--primary-soft); border:1px solid #d3ddfa;
+    padding:5px 11px; border-radius:20px; margin-bottom:16px;
+  }
 
   .progress-demo{
     background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
@@ -54,15 +60,17 @@
   .usecase b{ color:var(--primary-dark); }
 
   .section{ border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); box-shadow:0 1px 2px rgba(15,27,45,0.04); margin-bottom:20px; }
-  .section .head{ padding:14px 20px; border-bottom:1px solid var(--border); background:var(--surface-alt); font-weight:700; font-size:14.5px; }
+  .section .head{ padding:14px 20px; border-bottom:1px solid var(--border); background:var(--surface-alt); font-weight:700; font-size:14.5px; display:flex; align-items:center; justify-content:space-between; }
+  .section .head .tag{ font-size:10.5px; font-weight:700; color:var(--primary); background:var(--primary-soft); padding:3px 8px; border-radius:6px; }
   .body{ padding:20px; }
   .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
   .row:last-child{margin-bottom:0;}
-  input[type=text], input[type=number]{
+  input[type=text], input[type=number], input[type=password]{
     font-family:var(--sans); font-size:13.5px; background:var(--surface); border:1px solid var(--border);
     border-radius:8px; padding:10px 13px; flex:1; min-width:140px; color:var(--text);
   }
   input:focus{ outline:none; border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-soft); }
+  select{ font-family:var(--sans); font-size:13.5px; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 13px; color:var(--text); }
   .act{ font-family:var(--sans); font-size:12.5px; font-weight:600; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:9px 14px; cursor:pointer; }
   .act:hover{ background:var(--surface-alt); border-color:var(--primary); }
   .act.primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
@@ -75,6 +83,8 @@
   .stat-line:last-of-type{ border-bottom:none; }
   .stat-line .k{ color:var(--text-mute); }
   .stat-line .v{ font-weight:700; font-family:var(--mono); font-size:12px; }
+  .stat-line .v.locked{ color:var(--text-faint); font-style:italic; font-family:var(--sans); font-weight:600; }
+  .stat-line .v.unlocked{ color:var(--primary-dark); }
 
   #connectBtn{ font-family:var(--sans); font-weight:600; font-size:13px; background:var(--primary); color:#fff; border:none; border-radius:8px; padding:10px 18px; cursor:pointer; }
   #connectBtn:hover{ background:var(--primary-dark); }
@@ -97,8 +107,9 @@
   <div class="hero">
     <div class="eyebrow">StableLab · FlowPay Module</div>
     <h1>Money flows over time</h1>
+    <div class="privacy-badge">🔒 Confidential stream amounts</div>
     <div class="lede">
-      Payments don't always have to be one-time. FlowPay streams an amount second by second over a duration you set; the recipient can withdraw whatever they've earned so far, at any moment. You can also stop the stream any time and reclaim the portion that hasn't flowed yet.
+      Payments don't always have to be one-time. FlowPay streams an amount second by second over a duration you set. The total amount and the currently earned balance are visible only to the sender and recipient by default; anyone else needs explicit access.
     </div>
   </div>
 
@@ -109,11 +120,11 @@
   </div>
 
   <div class="usecase">
-    <b>Example scenario:</b> You pay a remote team member their monthly salary. Instead of waiting until month's end, you say "stream 3000 USDC over 30 days". If the employee needs it on day 15, they can withdraw the ~1500 USDC they've earned so far; you've effectively paid right on time, automatically. If they leave, you cancel and reclaim the portion that hasn't flowed yet.
+    <b>Example scenario:</b> You pay a remote team member their monthly salary. Instead of waiting until month's end, you say "stream 3000 USDC over 30 days". The amount stays encrypted onchain; only the two of you can see how much is flowing or how much has been earned so far. If the employee needs it on day 15, they can withdraw what they've earned; if they leave, you cancel and reclaim the unflowed portion.
   </div>
 
   <div class="howcard">
-    <div class="howstep"><div class="num">01</div><div class="title">Start a stream</div><div class="desc">You set the recipient, total amount, and duration.</div></div>
+    <div class="howstep"><div class="num">01</div><div class="title">Start a stream</div><div class="desc">You set the recipient, total amount, and duration. The amount is encrypted.</div></div>
     <div class="howstep"><div class="num">02</div><div class="title">Time flows</div><div class="desc">Every second, a proportional part of the amount is "earned".</div></div>
     <div class="howstep"><div class="num">03</div><div class="title">Recipient withdraws</div><div class="desc">They can claim what they've earned so far, whenever.</div></div>
     <div class="howstep"><div class="num">04</div><div class="title">Cancel (optional)</div><div class="desc">The sender can reclaim the remaining (unflowed) portion.</div></div>
@@ -127,7 +138,7 @@
   </div>
 
   <div class="section">
-    <div class="head">Start a New Stream</div>
+    <div class="head">Start a New Stream <span class="tag">Encrypted</span></div>
     <div class="body">
       <div class="row"><input type="text" id="streamRecipient" placeholder="Recipient address (0x...)" /></div>
       <div class="row">
@@ -141,25 +152,50 @@
           <option value="604800">Weeks</option>
           <option value="2592000">Months</option>
         </select>
-        <button class="act primary" id="btnCreateStream">Start Stream</button>
       </div>
-      <div class="hint">Enter a number and pick a unit — it's converted to seconds automatically.</div>
+      <div class="row"><input type="password" id="streamSecret" placeholder="Shared passphrase (for encryption)" /></div>
+      <div class="row"><button class="act primary" id="btnCreateStream">Start Stream</button></div>
+      <div class="hint">Share the passphrase privately with the recipient so they can decrypt the amount. Enter a number and pick a unit — it's converted to seconds automatically.</div>
       <div class="stat-line"><span class="k">Platform fee (0.25%)</span><span class="v" id="streamFeePreview">—</span></div>
       <div class="stat-line"><span class="k">Recipient will receive (total, over time)</span><span class="v" id="streamNetPreview">—</span></div>
     </div>
   </div>
 
   <div class="section">
-    <div class="head">Manage Stream</div>
+    <div class="head">Manage Stream <span class="tag">Sender / Recipient / Authorized</span></div>
     <div class="body">
       <div class="row">
         <input type="number" id="streamIdInput" placeholder="Stream ID" />
-        <button class="act" id="btnStreamCheck">Check</button>
+        <button class="act" id="btnStreamCheck">Check Withdrawable</button>
         <button class="act primary" id="btnStreamWithdraw">Withdraw Earned</button>
         <button class="act" id="btnStreamCancel">Cancel Stream</button>
       </div>
-      <div class="stat-line"><span class="k">Currently withdrawable amount</span><span class="v" id="streamWithdrawable">—</span></div>
-      <div class="hint">Note down the Stream ID; needed for checking and withdrawing.</div>
+      <div class="stat-line"><span class="k">Currently withdrawable amount</span><span class="v locked" id="streamWithdrawable">Not checked</span></div>
+      <div class="hint">Only the sender, recipient, or someone explicitly granted access can check the withdrawable amount.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="head">Decrypt Total Amount <span class="tag">Sender / Recipient / Authorized</span></div>
+    <div class="body">
+      <div class="row">
+        <input type="number" id="decryptStreamId" placeholder="Stream ID" />
+        <input type="password" id="decryptSecret" placeholder="Shared passphrase" />
+        <button class="act primary" id="btnDecrypt">Decrypt</button>
+      </div>
+      <div class="stat-line"><span class="k">Total stream amount</span><span class="v locked" id="decryptedAmountVal">Not decrypted</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="head">Grant Viewer Access <span class="tag">Sender / Recipient only</span></div>
+    <div class="body">
+      <div class="row">
+        <input type="number" id="grantStreamId" placeholder="Stream ID" />
+        <input type="text" id="grantViewer" placeholder="Address to grant access (e.g. an accountant)" />
+        <button class="act" id="btnGrantAccess">Grant Access</button>
+      </div>
+      <div class="hint">Use this to let someone else (e.g. finance/accounting) view the stream's amounts.</div>
     </div>
   </div>
 </div>
@@ -169,7 +205,7 @@
 <script>
 const ADDR = {
   USDC:      "0x3600000000000000000000000000000000000000",
-  Streaming: "0x7e57100bb7e942Ee10F99aCbf0e6Fd282b220A3B"
+  Streaming: "0x8e74FfdB734a3AfA50dB75d54762B89db1DcADcA"
 };
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
@@ -177,10 +213,12 @@ const ERC20_ABI = [
   "function allowance(address owner, address spender) view returns (uint256)"
 ];
 const STREAMING_ABI = [
-  "function createStream(address recipient, uint256 totalAmount, uint256 durationSeconds) returns (uint256)",
+  "function createStream(address recipient, bytes calldata encryptedAmount, uint256 totalAmount, uint256 durationSeconds) returns (uint256)",
   "function withdraw(uint256 streamId)",
   "function cancelStream(uint256 streamId)",
-  "function withdrawable(uint256 streamId) view returns (uint256)"
+  "function withdrawable(uint256 streamId) view returns (uint256)",
+  "function getEncryptedAmount(uint256 streamId) view returns (bytes memory)",
+  "function grantViewerAccess(uint256 streamId, address viewer)"
 ];
 
 let provider, signer, account, usdc, streaming;
@@ -195,6 +233,35 @@ function log(msg, type){
 function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 6)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
 function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 6); }
 
+/* ---------- Encryption (matches VeilPay's scheme) ---------- */
+async function deriveKey(sharedSecret) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(sharedSecret), { name: "PBKDF2" }, false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: enc.encode("veilpay-salt"), iterations: 100000, hash: "SHA-256" },
+    keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
+  );
+}
+async function encryptAmount(amount, sharedSecret) {
+  const key = await deriveKey(sharedSecret);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = new TextEncoder();
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, enc.encode(String(amount)));
+  const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(ciphertext), iv.length);
+  return "0x" + Array.from(combined).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+async function decryptAmount(hexData, sharedSecret) {
+  const key = await deriveKey(sharedSecret);
+  const bytes = ethers.utils.arrayify(hexData);
+  const iv = bytes.slice(0, 12);
+  const ciphertext = bytes.slice(12);
+  const dec = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+  return new TextDecoder().decode(dec);
+}
+
+/* ---------- Wallet ---------- */
 async function connect(){
   if(!window.ethereum){ log("No wallet extension found (Rabby/MetaMask).", "err"); return; }
   try{
@@ -211,7 +278,6 @@ async function connect(){
     document.getElementById('walletHint').style.display = 'none';
   }catch(e){ log("Connection error: " + (e.message || e), "err"); }
 }
-
 function disconnect(){
   provider = null; signer = null; account = null; usdc = null; streaming = null;
   document.getElementById('connectBtn').textContent = "Connect Wallet";
@@ -237,19 +303,22 @@ async function doCreateStream(){
   const durValue = document.getElementById('streamDurationValue').value;
   const durUnit = Number(document.getElementById('streamDurationUnit').value);
   const dur = Number(durValue) * durUnit;
+  const secret = document.getElementById('streamSecret').value;
   if(!account){ log("Connect your wallet first.", "err"); return; }
   if(!ethers.utils.isAddress(recipient)){ log("Enter a valid recipient address.", "err"); return; }
   if(!amt || Number(amt) <= 0 || !durValue || dur <= 0){ log("Enter a valid amount and duration.", "err"); return; }
+  if(!secret){ log("Enter a shared passphrase to encrypt the amount.", "err"); return; }
   try{
     const wei = toWei(amt);
     await ensureApproval(wei);
+    const encrypted = await encryptAmount(amt, secret);
     log("Creating stream…");
-    const tx = await streaming.createStream(recipient, wei, Math.floor(Number(dur)));
+    const tx = await streaming.createStream(recipient, encrypted, wei, Math.floor(Number(dur)));
     const receipt = await tx.wait();
 
     let newStreamId = null;
     const iface = new ethers.utils.Interface([
-      "event StreamCreated(uint256 indexed streamId, address indexed sender, address indexed recipient, uint256 amount, uint256 startTime, uint256 endTime, uint256 platformFee)"
+      "event StreamCreated(uint256 indexed streamId, address indexed sender, address indexed recipient, uint256 startTime, uint256 endTime)"
     ]);
     for(const l of receipt.logs){
       try{
@@ -260,7 +329,8 @@ async function doCreateStream(){
 
     if(newStreamId !== null){
       document.getElementById('streamIdInput').value = newStreamId;
-      log("Stream created! Your Stream ID is " + newStreamId + " (auto-filled below).", "ok");
+      document.getElementById('decryptStreamId').value = newStreamId;
+      log("Stream created! Your Stream ID is " + newStreamId + " (auto-filled below). Amount is encrypted onchain.", "ok");
     } else {
       log("Payment stream created, but the Stream ID could not be read automatically. Check the transaction logs on the explorer.", "ok");
     }
@@ -268,11 +338,18 @@ async function doCreateStream(){
 }
 async function doStreamCheck(){
   const id = document.getElementById('streamIdInput').value;
+  const el = document.getElementById('streamWithdrawable');
   if(id === "" || id === null){ log("Enter a Stream ID.", "err"); return; }
+  if(!account){ log("Connect your wallet first.", "err"); return; }
   try{
     const w = await streaming.withdrawable(id);
-    document.getElementById('streamWithdrawable').textContent = fmt(w) + " USDC";
-  }catch(e){ log("Query failed: " + (e.reason || e.message || e), "err"); }
+    el.textContent = fmt(w) + " USDC";
+    el.className = "v unlocked";
+  }catch(e){
+    el.textContent = "Not checked";
+    el.className = "v locked";
+    log("Query failed: " + (e.reason || e.message || "check access"), "err");
+  }
 }
 async function doStreamWithdraw(){
   const id = document.getElementById('streamIdInput').value;
@@ -296,6 +373,36 @@ async function doStreamCancel(){
     await doStreamCheck();
   }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
+async function doDecrypt(){
+  const id = document.getElementById('decryptStreamId').value;
+  const secret = document.getElementById('decryptSecret').value;
+  const el = document.getElementById('decryptedAmountVal');
+  if(id === "" || id === null){ log("Enter a Stream ID.", "err"); return; }
+  if(!account){ log("Connect your wallet first.", "err"); return; }
+  try{
+    const encrypted = await streaming.getEncryptedAmount(id);
+    const amount = await decryptAmount(encrypted, secret);
+    el.textContent = amount + " USDC";
+    el.className = "v unlocked";
+    log("Decrypted successfully.", "ok");
+  }catch(e){
+    el.textContent = "Not decrypted";
+    el.className = "v locked";
+    log("Could not decrypt: " + (e.reason || e.message || "check access or passphrase"), "err");
+  }
+}
+async function doGrantAccess(){
+  const id = document.getElementById('grantStreamId').value;
+  const viewer = document.getElementById('grantViewer').value.trim();
+  if(id === "" || id === null){ log("Enter a Stream ID.", "err"); return; }
+  if(!ethers.utils.isAddress(viewer)){ log("Enter a valid address.", "err"); return; }
+  try{
+    log("Granting access…");
+    const tx = await streaming.grantViewerAccess(id, viewer);
+    await tx.wait();
+    log("Access granted.", "ok");
+  }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
+}
 
 document.getElementById('connectBtn').addEventListener('click', connect);
 document.getElementById('disconnectBtn').addEventListener('click', disconnect);
@@ -314,6 +421,8 @@ document.getElementById('btnCreateStream').addEventListener('click', doCreateStr
 document.getElementById('btnStreamCheck').addEventListener('click', doStreamCheck);
 document.getElementById('btnStreamWithdraw').addEventListener('click', doStreamWithdraw);
 document.getElementById('btnStreamCancel').addEventListener('click', doStreamCancel);
+document.getElementById('btnDecrypt').addEventListener('click', doDecrypt);
+document.getElementById('btnGrantAccess').addEventListener('click', doGrantAccess);
 
 /* ---------- Auto-reconnect ---------- */
 (async function(){
