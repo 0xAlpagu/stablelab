@@ -26,8 +26,14 @@
 
   .hero{ margin-bottom:28px; }
   .eyebrow{ font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--primary); margin-bottom:8px; }
-  h1{ font-size:32px; font-weight:800; margin:0 0 10px; letter-spacing:-0.02em; text-align:justify; }
-  .lede{ font-size:14.5px; color:var(--text-mute); max-width:none; line-height:1.65; text-align:justify; }
+  h1{ font-size:32px; font-weight:800; margin:0 0 10px; letter-spacing:-0.02em; }
+  .lede{ font-size:14.5px; color:var(--text-mute); max-width:none; line-height:1.65; }
+
+  .privacy-badge{
+    display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700;
+    color:var(--primary-dark); background:var(--primary-soft); border:1px solid #d3ddfa;
+    padding:5px 11px; border-radius:20px; margin-bottom:16px;
+  }
 
   .signers-demo{
     background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
@@ -57,11 +63,12 @@
   .usecase b{ color:var(--primary-dark); }
 
   .section{ border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); box-shadow:0 1px 2px rgba(15,27,45,0.04); margin-bottom:20px; }
-  .section .head{ padding:14px 20px; border-bottom:1px solid var(--border); background:var(--surface-alt); font-weight:700; font-size:14.5px; }
+  .section .head{ padding:14px 20px; border-bottom:1px solid var(--border); background:var(--surface-alt); font-weight:700; font-size:14.5px; display:flex; align-items:center; justify-content:space-between; }
+  .section .head .tag{ font-size:10.5px; font-weight:700; color:var(--primary); background:var(--primary-soft); padding:3px 8px; border-radius:6px; }
   .body{ padding:20px; }
   .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
   .row:last-child{margin-bottom:0;}
-  input[type=text], input[type=number]{
+  input[type=text], input[type=number], input[type=password]{
     font-family:var(--sans); font-size:13.5px; background:var(--surface); border:1px solid var(--border);
     border-radius:8px; padding:10px 13px; flex:1; min-width:140px; color:var(--text);
   }
@@ -78,6 +85,8 @@
   .stat-line:last-of-type{ border-bottom:none; }
   .stat-line .k{ color:var(--text-mute); }
   .stat-line .v{ font-weight:700; font-family:var(--mono); font-size:12px; }
+  .stat-line .v.locked{ color:var(--text-faint); font-style:italic; font-family:var(--sans); font-weight:600; }
+  .stat-line .v.unlocked{ color:var(--primary-dark); }
 
   #connectBtn{ font-family:var(--sans); font-weight:600; font-size:13px; background:var(--primary); color:#fff; border:none; border-radius:8px; padding:10px 18px; cursor:pointer; }
   #connectBtn:hover{ background:var(--primary-dark); }
@@ -100,8 +109,9 @@
   <div class="hero">
     <div class="eyebrow">StableLab · VaultGuard Module</div>
     <h1>One signature is never enough</h1>
+    <div class="privacy-badge">🔒 Amounts visible to signers only</div>
     <div class="lede">
-      VaultGuard creates a shared vault; moving money out requires approval from a predetermined number of signers, not just one person. Even if a single wallet is compromised, money can't be withdrawn alone.
+      VaultGuard creates a shared vault; moving money out requires approval from a predetermined number of signers, not just one person. Proposal amounts are encrypted: any current signer can decrypt them to decide, but no one outside the vault can see how much is being moved.
     </div>
   </div>
 
@@ -115,13 +125,13 @@
   </div>
 
   <div class="usecase">
-    <b>Example scenario:</b> You and two business partners set up a shared company vault (3 people, 2 approvals needed). No one can withdraw alone; someone proposes "send 500 USDC to this address", and once at least 2 people approve, the transaction executes automatically. Even if one person's wallet gets stolen, the money stays safe.
+    <b>Example scenario:</b> You and two business partners set up a shared company vault (3 people, 2 approvals needed). Someone proposes "send an encrypted amount to this address"; every current signer can decrypt and see it to decide, but outsiders never see it onchain. Once at least 2 people approve, the transaction executes automatically.
   </div>
 
   <div class="howcard">
     <div class="howstep"><div class="num">01</div><div class="title">Deposit to vault</div><div class="desc">You build the shared fund by depositing tokens into the vault.</div></div>
-    <div class="howstep"><div class="num">02</div><div class="title">Propose</div><div class="desc">Any signer proposes a transfer.</div></div>
-    <div class="howstep"><div class="num">03</div><div class="title">Confirmations gather</div><div class="desc">Other signers confirm the proposal one by one.</div></div>
+    <div class="howstep"><div class="num">02</div><div class="title">Propose</div><div class="desc">Any signer proposes a transfer with an encrypted amount.</div></div>
+    <div class="howstep"><div class="num">03</div><div class="title">Confirmations gather</div><div class="desc">Other signers decrypt and confirm the proposal one by one.</div></div>
     <div class="howstep"><div class="num">04</div><div class="title">Executes automatically</div><div class="desc">Once the threshold is reached, the transfer happens on its own.</div></div>
   </div>
 
@@ -144,14 +154,15 @@
   </div>
 
   <div class="section">
-    <div class="head">Propose Transfer</div>
+    <div class="head">Propose Transfer <span class="tag">Encrypted</span></div>
     <div class="body">
+      <div class="row"><input type="text" id="msigTo" placeholder="Recipient address (0x...)" /></div>
       <div class="row">
-        <input type="text" id="msigTo" placeholder="Recipient address (0x...)" />
         <input type="number" id="msigAmount" placeholder="Amount (USDC)" />
-        <button class="act primary" id="btnMsigPropose">Create Proposal</button>
+        <input type="password" id="msigSecret" placeholder="Shared passphrase (for encryption)" />
       </div>
-      <div class="hint">After creating a proposal, the required number of signers must confirm it.</div>
+      <div class="row"><button class="act primary" id="btnMsigPropose">Create Proposal</button></div>
+      <div class="hint">Share the passphrase privately with the other signers so they can decrypt the amount. After creating a proposal, the required number of signers must confirm it.</div>
       <div class="stat-line"><span class="k">If executed: platform fee (0.2%)</span><span class="v" id="msigFeePreview">—</span></div>
       <div class="stat-line"><span class="k">If executed: recipient receives</span><span class="v" id="msigNetPreview">—</span></div>
     </div>
@@ -168,6 +179,19 @@
       <div class="stat-line"><span class="k">Required confirmations</span><span class="v" id="msigRequiredVal">—</span></div>
       <div class="stat-line"><span class="k">Proposal info</span><span class="v" id="msigProposalVal">—</span></div>
       <div class="hint">First deposit into the vault, then propose a transfer; once enough confirmations are collected, it executes automatically.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="head">Decrypt Amount <span class="tag">Signers only</span></div>
+    <div class="body">
+      <div class="row">
+        <input type="number" id="decryptProposalId" placeholder="Proposal ID" />
+        <input type="password" id="decryptSecret" placeholder="Shared passphrase" />
+        <button class="act primary" id="btnDecrypt">Decrypt</button>
+      </div>
+      <div class="stat-line"><span class="k">Amount</span><span class="v locked" id="decryptedAmountVal">Not decrypted</span></div>
+      <div class="hint">Only a current signer of the vault can decrypt proposal amounts.</div>
     </div>
   </div>
 
@@ -194,7 +218,7 @@
 <script>
 const ADDR = {
   USDC:     "0x3600000000000000000000000000000000000000",
-  MultiSig: "0x410862a8d468028D777Df00368D652922054ae2E"
+  MultiSig: "0x992369C19ff315f87c47Cc0512a215F2BdBAA1A1"
 };
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
@@ -203,15 +227,15 @@ const ERC20_ABI = [
 ];
 const MULTISIG_ABI = [
   "function deposit(uint256 amount)",
-  "function proposeTransfer(address to, uint256 amount) returns (uint256)",
+  "function proposeTransfer(address to, bytes calldata encryptedAmount, uint256 amount) returns (uint256)",
   "function confirm(uint256 proposalId)",
-  "function proposals(uint256) view returns (address to, uint256 amount, uint256 confirmations, bool executed)",
+  "function proposalMeta(uint256 proposalId) view returns (address to, uint256 confirmations, bool executed)",
+  "function getEncryptedAmount(uint256 proposalId) view returns (bytes memory)",
   "function required() view returns (uint256)",
   "function addOwner(address newOwner)",
   "function removeOwner(address ownerToRemove)",
   "function changeRequired(uint256 newRequired)",
   "function ownersCount() view returns (uint256)",
-  "function owners(uint256) view returns (address)",
   "function isOwner(address) view returns (bool)"
 ];
 
@@ -227,6 +251,35 @@ function log(msg, type){
 function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 6)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
 function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 6); }
 
+/* ---------- Encryption (matches VeilPay's scheme) ---------- */
+async function deriveKey(sharedSecret) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(sharedSecret), { name: "PBKDF2" }, false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: enc.encode("veilpay-salt"), iterations: 100000, hash: "SHA-256" },
+    keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
+  );
+}
+async function encryptAmount(amount, sharedSecret) {
+  const key = await deriveKey(sharedSecret);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = new TextEncoder();
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, enc.encode(String(amount)));
+  const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(ciphertext), iv.length);
+  return "0x" + Array.from(combined).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+async function decryptAmount(hexData, sharedSecret) {
+  const key = await deriveKey(sharedSecret);
+  const bytes = ethers.utils.arrayify(hexData);
+  const iv = bytes.slice(0, 12);
+  const ciphertext = bytes.slice(12);
+  const dec = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+  return new TextDecoder().decode(dec);
+}
+
+/* ---------- Wallet ---------- */
 async function connect(){
   if(!window.ethereum){ log("No wallet extension found (Rabby/MetaMask).", "err"); return; }
   try{
@@ -280,17 +333,20 @@ async function doMsigDeposit(){
 async function doMsigPropose(){
   const to = document.getElementById('msigTo').value.trim();
   const amt = document.getElementById('msigAmount').value;
+  const secret = document.getElementById('msigSecret').value;
   if(!account){ log("Connect your wallet first.", "err"); return; }
   if(!ethers.utils.isAddress(to)){ log("Enter a valid recipient address.", "err"); return; }
   if(!amt || Number(amt) <= 0){ log("Enter a valid amount.", "err"); return; }
+  if(!secret){ log("Enter a shared passphrase to encrypt the amount.", "err"); return; }
   try{
+    const encrypted = await encryptAmount(amt, secret);
     log("Sending proposal…");
-    const tx = await multisig.proposeTransfer(to, toWei(amt));
+    const tx = await multisig.proposeTransfer(to, encrypted, toWei(amt));
     const receipt = await tx.wait();
 
     let newProposalId = null;
     const iface = new ethers.utils.Interface([
-      "event ProposalCreated(uint256 indexed proposalId, address indexed to, uint256 amount)"
+      "event ProposalCreated(uint256 indexed proposalId, address indexed to, uint256 timestamp)"
     ]);
     for(const l of receipt.logs){
       try{
@@ -301,7 +357,8 @@ async function doMsigPropose(){
 
     if(newProposalId !== null){
       document.getElementById('msigProposalId').value = newProposalId;
-      log("Proposal created! Your Proposal ID is " + newProposalId + " (auto-filled below).", "ok");
+      document.getElementById('decryptProposalId').value = newProposalId;
+      log("Proposal created! Your Proposal ID is " + newProposalId + " (auto-filled below). Amount is encrypted.", "ok");
     } else {
       log("Proposal created, but the Proposal ID could not be read automatically. Check the transaction logs on the explorer.", "ok");
     }
@@ -313,9 +370,9 @@ async function doMsigCheck(){
     document.getElementById('msigRequiredVal').textContent = req.toString();
     const id = document.getElementById('msigProposalId').value;
     if(id !== "" && id !== null){
-      const p = await multisig.proposals(id);
+      const p = await multisig.proposalMeta(id);
       document.getElementById('msigProposalVal').textContent =
-        p.to.slice(0,6) + "…" + p.to.slice(-4) + " · " + fmt(p.amount) + " USDC · " +
+        p.to.slice(0,6) + "…" + p.to.slice(-4) + " · (amount encrypted) · " +
         p.confirmations.toString() + "/" + req.toString() + (p.executed ? " ✓" : "");
     }
   }catch(e){ log("Query failed: " + (e.reason || e.message || e), "err"); }
@@ -330,6 +387,24 @@ async function doMsigConfirm(){
     log("Confirmed.", "ok");
     await doMsigCheck();
   }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
+}
+async function doDecrypt(){
+  const id = document.getElementById('decryptProposalId').value;
+  const secret = document.getElementById('decryptSecret').value;
+  const el = document.getElementById('decryptedAmountVal');
+  if(id === "" || id === null){ log("Enter a Proposal ID.", "err"); return; }
+  if(!account){ log("Connect your wallet first.", "err"); return; }
+  try{
+    const encrypted = await multisig.getEncryptedAmount(id);
+    const amount = await decryptAmount(encrypted, secret);
+    el.textContent = amount + " USDC";
+    el.className = "v unlocked";
+    log("Decrypted successfully.", "ok");
+  }catch(e){
+    el.textContent = "Not decrypted";
+    el.className = "v locked";
+    log("Could not decrypt: " + (e.reason || e.message || "you must be a current signer"), "err");
+  }
 }
 
 document.getElementById('connectBtn').addEventListener('click', connect);
@@ -394,6 +469,7 @@ document.getElementById('btnMsigChangeRequired').addEventListener('click', doCha
 document.getElementById('btnMsigPropose').addEventListener('click', doMsigPropose);
 document.getElementById('btnMsigCheck').addEventListener('click', doMsigCheck);
 document.getElementById('btnMsigConfirm').addEventListener('click', doMsigConfirm);
+document.getElementById('btnDecrypt').addEventListener('click', doDecrypt);
 
 /* ---------- Auto-reconnect ---------- */
 (async function(){
