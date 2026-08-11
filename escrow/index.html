@@ -26,8 +26,14 @@
 
   .hero{ margin-bottom:28px; }
   .eyebrow{ font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--primary); margin-bottom:8px; }
-  h1{ font-size:32px; font-weight:800; margin:0 0 10px; letter-spacing:-0.02em; text-align:justify; }
-  .lede{ font-size:14.5px; color:var(--text-mute); max-width:none; line-height:1.65; text-align:justify; }
+  h1{ font-size:32px; font-weight:800; margin:0 0 10px; letter-spacing:-0.02em; }
+  .lede{ font-size:14.5px; color:var(--text-mute); max-width:none; line-height:1.65; }
+
+  .privacy-badge{
+    display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700;
+    color:var(--primary-dark); background:var(--primary-soft); border:1px solid #d3ddfa;
+    padding:5px 11px; border-radius:20px; margin-bottom:16px;
+  }
 
   .howcard{
     display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1px;
@@ -45,15 +51,17 @@
   .usecase b{ color:var(--primary-dark); }
 
   .section{ border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); box-shadow:0 1px 2px rgba(15,27,45,0.04); margin-bottom:20px; }
-  .section .head{ padding:14px 20px; border-bottom:1px solid var(--border); background:var(--surface-alt); font-weight:700; font-size:14.5px; }
+  .section .head{ padding:14px 20px; border-bottom:1px solid var(--border); background:var(--surface-alt); font-weight:700; font-size:14.5px; display:flex; align-items:center; justify-content:space-between; }
+  .section .head .tag{ font-size:10.5px; font-weight:700; color:var(--primary); background:var(--primary-soft); padding:3px 8px; border-radius:6px; }
   .body{ padding:20px; }
   .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
   .row:last-child{margin-bottom:0;}
-  input[type=text], input[type=number]{
+  input[type=text], input[type=number], input[type=password]{
     font-family:var(--sans); font-size:13.5px; background:var(--surface); border:1px solid var(--border);
     border-radius:8px; padding:10px 13px; flex:1; min-width:140px; color:var(--text);
   }
   input:focus{ outline:none; border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-soft); }
+  label.field-label{ display:block; font-size:11.5px; font-weight:600; color:var(--text-mute); margin:0 0 5px; }
   .act{ font-family:var(--sans); font-size:12.5px; font-weight:600; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:9px 14px; cursor:pointer; }
   .act:hover{ background:var(--surface-alt); border-color:var(--primary); }
   .act.primary{ background:var(--primary); color:#fff; border-color:var(--primary); }
@@ -66,6 +74,8 @@
   .stat-line:last-of-type{ border-bottom:none; }
   .stat-line .k{ color:var(--text-mute); }
   .stat-line .v{ font-weight:700; font-family:var(--mono); font-size:12px; }
+  .stat-line .v.locked{ color:var(--text-faint); font-style:italic; font-family:var(--sans); font-weight:600; }
+  .stat-line .v.unlocked{ color:var(--primary-dark); }
 
   #connectBtn{ font-family:var(--sans); font-weight:600; font-size:13px; background:var(--primary); color:#fff; border:none; border-radius:8px; padding:10px 18px; cursor:pointer; }
   #connectBtn:hover{ background:var(--primary-dark); }
@@ -88,20 +98,21 @@
   <div class="hero">
     <div class="eyebrow">StableLab · TrustLock Module</div>
     <h1>Payments held safely in trust</h1>
+    <div class="privacy-badge">🔒 Confidential deal amounts</div>
     <div class="lede">
-      When two parties don't fully trust each other, TrustLock locks the money onchain instead of sending it directly to the other side, releasing it only when the agreed condition is met; with an arbiter in the loop, it offers a fair resolution path even in disputes.
+      When two parties don't fully trust each other, TrustLock locks the money onchain instead of sending it directly to the other side, releasing it only when the agreed condition is met. The deal amount is encrypted: only the depositor and beneficiary see it by default. The arbiter stays neutral until access is explicitly granted, so a fair resolution path exists even in disputes.
     </div>
   </div>
 
   <div class="usecase">
-    <b>Example scenario:</b> You're about to pay a freelancer for a project. If you send the money directly, there's a risk they disappear before finishing; if they do the work first and wait for payment, the trust problem shifts to their side. With TrustLock, you lock the money and appoint a trusted third party (or yourself) as arbiter; once the work is done, payment is released, and if a dispute arises, the arbiter decides.
+    <b>Example scenario:</b> You're about to pay a freelancer for a project. If you send the money directly, there's a risk they disappear before finishing; if they do the work first and wait for payment, the trust problem shifts to their side. With TrustLock, you lock the money and appoint a trusted third party as arbiter. The arbiter can't see how much is at stake until you or the beneficiary grants them access, usually only if a dispute actually arises.
   </div>
 
   <div class="howcard">
-    <div class="howstep"><div class="num">01</div><div class="title">Create a deal</div><div class="desc">You set the beneficiary and arbiter addresses, and lock the amount.</div></div>
+    <div class="howstep"><div class="num">01</div><div class="title">Create a deal</div><div class="desc">You set the beneficiary and arbiter addresses, and lock an encrypted amount.</div></div>
     <div class="howstep"><div class="num">02</div><div class="title">Work is completed</div><div class="desc">The parties' agreed-upon work/delivery happens.</div></div>
     <div class="howstep"><div class="num">03</div><div class="title">Release</div><div class="desc">You or the arbiter approves, payment goes to the beneficiary.</div></div>
-    <div class="howstep"><div class="num">04</div><div class="title">Dispute</div><div class="desc">If there's an issue, the arbiter decides whether it goes to the beneficiary or is refunded to you.</div></div>
+    <div class="howstep"><div class="num">04</div><div class="title">Dispute</div><div class="desc">If there's an issue, grant the arbiter access to the amount so they can decide fairly.</div></div>
   </div>
 
   <div style="margin-bottom:24px;">
@@ -112,15 +123,16 @@
   </div>
 
   <div class="section">
-    <div class="head">Create a New Deal</div>
+    <div class="head">Create a New Deal <span class="tag">Encrypted</span></div>
     <div class="body">
       <div class="row"><input type="text" id="escrowBeneficiary" placeholder="Beneficiary address (0x...)" /></div>
+      <div class="row"><input type="text" id="escrowArbiter" placeholder="Arbiter address (0x...)" /></div>
       <div class="row">
-        <input type="text" id="escrowArbiter" placeholder="Arbiter address (0x...)" />
         <input type="number" id="escrowAmount" placeholder="Amount (USDC)" />
-        <button class="act primary" id="btnCreateDeal">Create Deal</button>
+        <input type="password" id="escrowSecret" placeholder="Shared passphrase (for encryption)" />
       </div>
-      <div class="hint">The amount gets locked; it waits until you or the arbiter releases or refunds it.</div>
+      <div class="row"><button class="act primary" id="btnCreateDeal">Create Deal</button></div>
+      <div class="hint">The amount gets locked and encrypted. Share the passphrase privately with the beneficiary so they can decrypt it later.</div>
       <div class="stat-line"><span class="k">If released: platform fee (1%)</span><span class="v" id="escrowFeePreview">—</span></div>
       <div class="stat-line"><span class="k">If released: beneficiary receives</span><span class="v" id="escrowNetPreview">—</span></div>
     </div>
@@ -139,6 +151,31 @@
       <div class="hint">Release: depositor or arbiter can do it. Refund: beneficiary or arbiter can do it.</div>
     </div>
   </div>
+
+  <div class="section">
+    <div class="head">Decrypt Amount <span class="tag">Depositor / Beneficiary / Authorized</span></div>
+    <div class="body">
+      <div class="row">
+        <input type="number" id="decryptDealId" placeholder="Deal ID" />
+        <input type="password" id="decryptSecret" placeholder="Shared passphrase" />
+        <button class="act primary" id="btnDecrypt">Decrypt</button>
+      </div>
+      <div class="stat-line"><span class="k">Amount</span><span class="v locked" id="decryptedAmountVal">Not decrypted</span></div>
+      <div class="hint">Only the depositor, beneficiary, or someone explicitly granted access can decrypt the amount.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="head">Grant Arbiter Access <span class="tag">Depositor / Beneficiary only</span></div>
+    <div class="body">
+      <div class="row">
+        <input type="number" id="grantDealId" placeholder="Deal ID" />
+        <input type="text" id="grantViewer" placeholder="Address to grant access (e.g. the arbiter)" />
+        <button class="act" id="btnGrantAccess">Grant Access</button>
+      </div>
+      <div class="hint">Use this if a dispute arises and the arbiter needs to see the amount to decide fairly.</div>
+    </div>
+  </div>
 </div>
 
 <div id="log"></div>
@@ -146,7 +183,7 @@
 <script>
 const ADDR = {
   USDC:   "0x3600000000000000000000000000000000000000",
-  Escrow: "0x8BBdE5DeA50C370b116efda19c2554BCF64Dac8c"
+  Escrow: "0x8f82FEff8621A20cBcE474fBe0c74b3335e5BC69"
 };
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
@@ -154,10 +191,12 @@ const ERC20_ABI = [
   "function allowance(address owner, address spender) view returns (uint256)"
 ];
 const ESCROW_ABI = [
-  "function createDeal(address beneficiary, address arbiter, uint256 amount) returns (uint256)",
+  "function createDeal(address beneficiary, address arbiter, bytes calldata encryptedAmount, uint256 amount) returns (uint256)",
   "function release(uint256 dealId)",
   "function refund(uint256 dealId)",
-  "function getDeal(uint256 dealId) view returns (address,address,address,uint256,uint8)"
+  "function getDeal(uint256 dealId) view returns (address,address,address,uint256,uint8)",
+  "function getEncryptedAmount(uint256 dealId) view returns (bytes memory)",
+  "function grantArbiterAccess(uint256 dealId, address viewer)"
 ];
 const STATUS = ["Active", "Released", "Refunded"];
 
@@ -170,9 +209,37 @@ function log(msg, type){
   clearTimeout(window.__t);
   window.__t = setTimeout(()=>{ el.className=''; }, 10000);
 }
-function fmt(bn){ try{ return Number(ethers.utils.formatUnits(bn, 6)).toLocaleString('en-US', {maximumFractionDigits: 4}); }catch(e){ return "—"; } }
 function toWei(v){ return ethers.utils.parseUnits(String(v || "0"), 6); }
 
+/* ---------- Encryption (matches VeilPay's scheme) ---------- */
+async function deriveKey(sharedSecret) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(sharedSecret), { name: "PBKDF2" }, false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: enc.encode("veilpay-salt"), iterations: 100000, hash: "SHA-256" },
+    keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
+  );
+}
+async function encryptAmount(amount, sharedSecret) {
+  const key = await deriveKey(sharedSecret);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = new TextEncoder();
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, enc.encode(String(amount)));
+  const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(ciphertext), iv.length);
+  return "0x" + Array.from(combined).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+async function decryptAmount(hexData, sharedSecret) {
+  const key = await deriveKey(sharedSecret);
+  const bytes = ethers.utils.arrayify(hexData);
+  const iv = bytes.slice(0, 12);
+  const ciphertext = bytes.slice(12);
+  const dec = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+  return new TextDecoder().decode(dec);
+}
+
+/* ---------- Wallet ---------- */
 async function connect(){
   if(!window.ethereum){ log("No wallet extension found (Rabby/MetaMask).", "err"); return; }
   try{
@@ -189,7 +256,6 @@ async function connect(){
     document.getElementById('walletHint').style.display = 'none';
   }catch(e){ log("Connection error: " + (e.message || e), "err"); }
 }
-
 function disconnect(){
   provider = null; signer = null; account = null; usdc = null; escrow = null;
   document.getElementById('connectBtn').textContent = "Connect Wallet";
@@ -213,19 +279,22 @@ async function doCreateDeal(){
   const beneficiary = document.getElementById('escrowBeneficiary').value.trim();
   const arbiter = document.getElementById('escrowArbiter').value.trim();
   const amt = document.getElementById('escrowAmount').value;
+  const secret = document.getElementById('escrowSecret').value;
   if(!account){ log("Connect your wallet first.", "err"); return; }
   if(!ethers.utils.isAddress(beneficiary) || !ethers.utils.isAddress(arbiter)){ log("Enter valid addresses.", "err"); return; }
   if(!amt || Number(amt) <= 0){ log("Enter a valid amount.", "err"); return; }
+  if(!secret){ log("Enter a shared passphrase to encrypt the amount.", "err"); return; }
   try{
     const wei = toWei(amt);
     await ensureApproval(wei);
+    const encrypted = await encryptAmount(amt, secret);
     log("Creating deal…");
-    const tx = await escrow.createDeal(beneficiary, arbiter, wei);
+    const tx = await escrow.createDeal(beneficiary, arbiter, encrypted, wei);
     const receipt = await tx.wait();
 
     let newDealId = null;
     const iface = new ethers.utils.Interface([
-      "event DealCreated(uint256 indexed dealId, address indexed depositor, address indexed beneficiary, address arbiter, uint256 amount)"
+      "event DealCreated(uint256 indexed dealId, address indexed depositor, address indexed beneficiary, address arbiter, uint256 timestamp)"
     ]);
     for(const l of receipt.logs){
       try{
@@ -236,18 +305,20 @@ async function doCreateDeal(){
 
     if(newDealId !== null){
       document.getElementById('dealIdInput').value = newDealId;
-      log("Deal created! Your Deal ID is " + newDealId + " (auto-filled below).", "ok");
+      document.getElementById('decryptDealId').value = newDealId;
+      log("Deal created! Your Deal ID is " + newDealId + " (auto-filled below). Amount is encrypted onchain.", "ok");
     } else {
       log("Deal created, but the Deal ID could not be read automatically. Check the transaction logs on the explorer.", "ok");
     }
   }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
+
 async function doDealCheck(){
   const id = document.getElementById('dealIdInput').value;
   if(id === "" || id === null){ log("Enter a Deal ID.", "err"); return; }
   try{
     const d = await escrow.getDeal(id);
-    document.getElementById('dealStatusVal').textContent = fmt(d[3]) + " USDC · " + STATUS[d[4]];
+    document.getElementById('dealStatusVal').textContent = STATUS[d[4]] + " (amount encrypted — use Decrypt Amount below)";
   }catch(e){ log("Query failed: " + (e.reason || e.message || e), "err"); }
 }
 async function doDealRelease(){
@@ -273,6 +344,38 @@ async function doDealRefund(){
   }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
 }
 
+async function doDecrypt(){
+  const id = document.getElementById('decryptDealId').value;
+  const secret = document.getElementById('decryptSecret').value;
+  const el = document.getElementById('decryptedAmountVal');
+  if(id === "" || id === null){ log("Enter a Deal ID.", "err"); return; }
+  if(!account){ log("Connect your wallet first.", "err"); return; }
+  try{
+    const encrypted = await escrow.getEncryptedAmount(id);
+    const amount = await decryptAmount(encrypted, secret);
+    el.textContent = amount + " USDC";
+    el.className = "v unlocked";
+    log("Decrypted successfully.", "ok");
+  }catch(e){
+    el.textContent = "Not decrypted";
+    el.className = "v locked";
+    log("Could not decrypt: " + (e.reason || e.message || "check access or passphrase"), "err");
+  }
+}
+
+async function doGrantAccess(){
+  const id = document.getElementById('grantDealId').value;
+  const viewer = document.getElementById('grantViewer').value.trim();
+  if(id === "" || id === null){ log("Enter a Deal ID.", "err"); return; }
+  if(!ethers.utils.isAddress(viewer)){ log("Enter a valid address.", "err"); return; }
+  try{
+    log("Granting access…");
+    const tx = await escrow.grantArbiterAccess(id, viewer);
+    await tx.wait();
+    log("Access granted.", "ok");
+  }catch(e){ log("Transaction failed: " + (e.reason || e.message || e), "err"); }
+}
+
 document.getElementById('connectBtn').addEventListener('click', connect);
 document.getElementById('disconnectBtn').addEventListener('click', disconnect);
 function updateEscrowFeePreview(){
@@ -290,6 +393,8 @@ document.getElementById('btnCreateDeal').addEventListener('click', doCreateDeal)
 document.getElementById('btnDealCheck').addEventListener('click', doDealCheck);
 document.getElementById('btnDealRelease').addEventListener('click', doDealRelease);
 document.getElementById('btnDealRefund').addEventListener('click', doDealRefund);
+document.getElementById('btnDecrypt').addEventListener('click', doDecrypt);
+document.getElementById('btnGrantAccess').addEventListener('click', doGrantAccess);
 
 /* ---------- Auto-reconnect ---------- */
 (async function(){
