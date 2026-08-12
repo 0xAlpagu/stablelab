@@ -487,13 +487,13 @@
             <a href="./escrow/" data-i18n="escrowTitle" data-tip="Lock funds for a deal and release them only once the agreed work is done, with an arbiter for disputes."></a>
             <a href="./multisig/" data-i18n="msigTitle" data-tip="Require multiple approvals before funds leave a shared vault. No single signer can move money alone."></a>
             <a href="./bulk/" data-i18n="batchTitle" data-tip="Pay many recipients in a single transaction instead of sending payments one by one."></a>
-            <a href="./dashboard/" data-i18n="navDashboard" data-tip="See your balances, positions, and recent activity across every module in one place."></a>
           </div>
         </div>
       </div>
       <a class="topbar-link" href="./pricing/" data-i18n="navPricing"></a>
       <a class="topbar-link" href="./about/" data-i18n="navAbout"></a>
       <a class="topbar-link" href="./contact/" data-i18n="navContact"></a>
+      <a class="topbar-link" href="./dashboard/" data-i18n="navDashboard"></a>
     </div>
     <div class="topbar-right">
       <div class="topbar-right-top">
@@ -1266,6 +1266,7 @@ async function connect(){
     account = await signer.getAddress();
     const network = await provider.getNetwork();
     lastNetworkOnArc = network.chainId === 5042002;
+    localStorage.setItem('stablelab_connected', '1');
     updateAcctInfo();
     document.getElementById('switchNetBtn').style.display = lastNetworkOnArc ? 'none' : 'inline-block';
     tARC    = new ethers.Contract(ADDR.tARC, ERC20_ABI, signer);
@@ -1692,6 +1693,7 @@ async function doMsigConfirm(){
 }
 function disconnect(){
   provider = null; signer = null; account = null;
+  localStorage.removeItem('stablelab_connected');
   document.getElementById('disconnectBtn').style.display = 'none';
   document.getElementById('accountMenu').style.display = 'none';
   document.getElementById('connectMenu').style.display = 'inline-block';
@@ -1750,6 +1752,7 @@ document.querySelectorAll('.group-menu').forEach(menu => {
 });
 (async function(){
   if(!window.ethereum) return;
+  if(localStorage.getItem('stablelab_connected') !== '1') return;
   try{
     const accs = await window.ethereum.request({ method: 'eth_accounts' });
     if(accs && accs.length){ await connect(); }
