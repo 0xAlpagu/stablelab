@@ -487,10 +487,11 @@
             <a href="./streaming/" data-i18n="streamTitle" data-tip="Pay salaries or subscriptions as a continuous flow, not a lump sum. Great for remote teams who want to get paid as they work."></a>
             <a href="./escrow/" data-i18n="escrowTitle" data-tip="Lock funds for a deal and release them only once the agreed work is done, with an arbiter for disputes."></a>
             <a href="./multisig/" data-i18n="msigTitle" data-tip="Require multiple approvals before funds leave a shared vault. No single signer can move money alone."></a>
-            <a href="./batch/" data-i18n="batchTitle" data-tip="Pay many recipients in a single transaction instead of sending payments one by one."></a>
+            <a href="./bulk/" data-i18n="batchTitle" data-tip="Pay many recipients in a single transaction instead of sending payments one by one."></a>
           </div>
         </div>
       </div>
+      <a class="topbar-link" href="./dashboard/" data-i18n="navDashboard"></a>
       <a class="topbar-link" href="./pricing/" data-i18n="navPricing"></a>
       <a class="topbar-link" href="./about/" data-i18n="navAbout"></a>
       <a class="topbar-link" href="./contact/" data-i18n="navContact"></a>
@@ -567,7 +568,7 @@
       <div class="carousel-headline" data-i18n="c5headline"></div>
       <div class="carousel-desc" data-i18n="c5desc"></div>
     </a>
-    <a class="carousel-slide" href="./batch/" data-slide="7">
+    <a class="carousel-slide" href="./bulk/" data-slide="7">
       <div class="carousel-icon" style="background:#6b4fd1;">📦</div>
       <div class="carousel-eyebrow" data-i18n="c7eyebrow"></div>
       <div class="carousel-headline" data-i18n="c7headline"></div>
@@ -621,9 +622,9 @@ const I18N = {
     c3eyebrow: "FLOWPAY", c3headline: "Kurumunuzun maaş ödemelerini zincir üzerinde akıtın.",
     c4eyebrow: "TRUSTLOCK", c4headline: "Anlaşmazlık riski olmadan, güvenli şartlı transferler.",
     c5eyebrow: "VAULTGUARD", c5headline: "Tek kişiye değil, ekibinize bağlı cüzdan güvenliği.",
-    c7eyebrow: "BATCHPAY", c7headline: "Onlarca kişiye tek işlemde ödeme yap.",    aboutTagline: "Arc üzerinde sıfırdan inşa edilmiş, uçtan uca çalışan bir stablecoin finans ekosistemi. Arc'ın altyapısıyla neler yapılabileceğinin somut bir kanıtı.",
+    c7eyebrow: "BULKPAY", c7headline: "Onlarca kişiye tek işlemde ödeme yap.",    aboutTagline: "Arc üzerinde sıfırdan inşa edilmiş, uçtan uca çalışan bir stablecoin finans ekosistemi. Arc'ın altyapısıyla neler yapılabileceğinin somut bir kanıtı.",
     aboutText: "StableLab, kod bilmeyen birinin, Arc Network Testnet üzerinde gerçek akıllı sözleşmeler yazıp deploy ederek geliştirdiği bağımsız bir deney projesidir. Basit bir stake/borç/takas fikriyle başladı; zamanla kurumsal finans dünyasının köklü kavramlarını (fatura faktoringi, escrow, hazine yönetimi, sürekli ödemeler) Arc üzerinde yeniden inşa eden sekiz modüllü bir ekosisteme dönüştü. Amaç bir şirket kurmak değil, Arc'ın sunduğu altyapının gerçek kullanım senaryolarında ne kadar güçlü olduğunu göstermek. Kod açık kaynaklıdır, GitHub üzerinden herkese açıktır ve geri bildirime her zaman açığız.",
-    navProducts: "Ürünler", navAbout: "Hakkında", navPricing: "Fiyatlandırma", navContact: "Bize Ulaşın", navAccount: "Hesabım",
+    navProducts: "Ürünler", navAbout: "Hakkında", navPricing: "Fiyatlandırma", navContact: "Bize Ulaşın", navAccount: "Hesabım", navDashboard: "Panel",
     aboutTitle2: "StableLab Hakkında",
     pricingTitle: "Fiyatlandırma", pricingDesc: "Şeffaflık önemli. İşte her modülün gerçek komisyon yapısı.",
     pricingCoreTitle: "Temel Araçlar", pricingCoreDesc: "Staking, Lending ve Swap tamamen ücretsizdir. Swap'ta sadece havuza likidite sağlayanlara giden %0.3'lük bir komisyon vardır, platform bundan pay almaz.",
@@ -650,7 +651,7 @@ const I18N = {
     dealReleasing: "Serbest bırakılıyor...", dealReleased: "Serbest bırakıldı.",
     dealRefunding: "İade ediliyor...", dealRefunded: "İade edildi.",
     msigTitle: "VaultGuard", msigDesc: "Finans dünyasında 'Treasury Management' olarak bilinir · bu iş için VaultGuard'ı tasarladık",
-    batchTitle: "BatchPay", batchDesc: "Finans dünyasında 'Bulk Disbursements' olarak bilinir · bu iş için BatchPay'i tasarladık",
+    batchTitle: "BulkPay", batchDesc: "Finans dünyasında 'Bulk Disbursements' olarak bilinir · bu iş için BulkPay'i tasarladık",
     proposeBtn: "Teklif Oluştur", proposalId: "Teklif ID", confirmBtn: "Onayla",
     msigRequired: "Gereken onay sayısı", msigProposalInfo: "Teklif bilgisi",
     msigHint: "Önce kasaya yatır (deposit), sonra bir transfer teklif et, yeterli onay toplanınca otomatik gerçekleşir.",
@@ -707,7 +708,7 @@ const I18N = {
     c3eyebrow: "FLOWPAY", c3headline: "Stream your company's payroll onchain.",
     c4eyebrow: "TRUSTLOCK", c4headline: "Secure conditional transfers, without the dispute risk.",
     c5eyebrow: "VAULTGUARD", c5headline: "Wallet security tied to your team, not one person.",
-    c7eyebrow: "BATCHPAY", c7headline: "Pay dozens of people in a single transaction.",
+    c7eyebrow: "BULKPAY", c7headline: "Pay dozens of people in a single transaction.",
     c0desc: "Deposit your USDC and earn a steady, predictable reward every second it's locked. No lockup periods, no complexity: withdraw your principal and reward together whenever you like.",
     c1desc: "Post your USDC or cirBTC as collateral and borrow USDC up to 66% of its value instantly, without selling. Repay any time to unlock your collateral again.",
     c2desc: "Trade USDC, EURC, and cirBTC instantly through liquidity pools, with prices set transparently by the pool's own reserves. A small 0.3% fee rewards the people supplying that liquidity.",
@@ -718,7 +719,7 @@ const I18N = {
     c7desc: "List recipients and amounts, review the total, and settle everyone in one onchain transaction instead of sending payments one by one.",
     aboutTagline: "An end-to-end stablecoin finance ecosystem, built from scratch on Arc Network. A concrete demonstration of what Arc's infrastructure can do.",
     aboutText: "StableLab is an independent experiment built by someone with no coding background, writing and deploying real smart contracts on Arc Network Testnet. It started as a simple stake/lend/swap idea and grew into an eight-module ecosystem that reimagines established institutional finance concepts (invoice factoring, escrow, treasury management, continuous payments) on Arc. The goal isn't to found a company. It's to show how strong Arc's infrastructure is in real-world use cases. The code is open-source, public on GitHub, and always open to feedback.",
-    navProducts: "Products", navAbout: "About", navPricing: "Pricing", navContact: "Contact", navAccount: "My Account", navWallet: "Create Circle Wallet",
+    navProducts: "Products", navAbout: "About", navPricing: "Pricing", navContact: "Contact", navAccount: "My Account", navWallet: "Create Circle Wallet", navDashboard: "Dashboard",
     aboutTitle2: "About StableLab",
     pricingTitle: "Pricing", pricingDesc: "Transparency matters. Here's the real fee structure for each module.",
     pricingCoreTitle: "Core Tools", pricingCoreDesc: "Staking, Lending, and Swap are completely free. Swap only has a 0.3% fee that goes to liquidity providers, not the platform.",
@@ -745,7 +746,7 @@ const I18N = {
     dealReleasing: "Releasing...", dealReleased: "Released.",
     dealRefunding: "Refunding...", dealRefunded: "Refunded.",
     msigTitle: "VaultGuard", msigDesc: "Known in finance as 'Treasury Management' · we designed VaultGuard for this",
-    batchTitle: "BatchPay", batchDesc: "Known in finance as 'Bulk Disbursements' · we designed BatchPay for this",
+    batchTitle: "BulkPay", batchDesc: "Known in finance as 'Bulk Disbursements' · we designed BulkPay for this",
     bridgeTitle: "Bridge",
     proposeBtn: "Create Proposal", proposalId: "Proposal ID", confirmBtn: "Confirm",
     msigRequired: "Required confirmations", msigProposalInfo: "Proposal info",
@@ -803,9 +804,9 @@ const I18N = {
     c3eyebrow: "FLOWPAY", c3headline: "Transmite la nómina de tu empresa en la cadena.",
     c4eyebrow: "TRUSTLOCK", c4headline: "Transferencias condicionales seguras, sin riesgo de disputa.",
     c5eyebrow: "VAULTGUARD", c5headline: "Seguridad de billetera ligada a tu equipo, no a una persona.",
-    c7eyebrow: "BATCHPAY", c7headline: "Paga a decenas de personas en una sola transacción.",    aboutTagline: "Un ecosistema financiero de stablecoins de extremo a extremo, construido desde cero en Arc Network. Una demostración concreta de lo que la infraestructura de Arc puede hacer.",
+    c7eyebrow: "BULKPAY", c7headline: "Paga a decenas de personas en una sola transacción.",    aboutTagline: "Un ecosistema financiero de stablecoins de extremo a extremo, construido desde cero en Arc Network. Una demostración concreta de lo que la infraestructura de Arc puede hacer.",
     aboutText: "StableLab es un experimento independiente construido por alguien sin experiencia en programación, escribiendo y desplegando contratos inteligentes reales en Arc Network Testnet. Comenzó como una simple idea de staking/préstamos/intercambio y creció hasta convertirse en un ecosistema de ocho módulos que reimagina conceptos financieros institucionales establecidos (factoraje de facturas, escrow, gestión de tesorería, pagos continuos) en Arc. El objetivo no es fundar una empresa, sino mostrar cuán sólida es la infraestructura de Arc en casos de uso reales. El código es de código abierto, público en GitHub, y siempre abierto a comentarios.",
-    navProducts: "Productos", navAbout: "Acerca de", navPricing: "Precios", navContact: "Contacto", navAccount: "Mi Cuenta",
+    navProducts: "Productos", navAbout: "Acerca de", navPricing: "Precios", navContact: "Contacto", navAccount: "Mi Cuenta", navDashboard: "Panel",
     aboutTitle2: "Acerca de StableLab",
     pricingTitle: "Precios", pricingDesc: "La transparencia importa. Esta es la estructura real de comisiones de cada módulo.",
     pricingCoreTitle: "Herramientas Principales", pricingCoreDesc: "Staking, Lending y Swap son completamente gratuitos. Swap solo tiene una comisión del 0,3% que va a los proveedores de liquidez, no a la plataforma.",
@@ -832,7 +833,7 @@ const I18N = {
     dealReleasing: "Liberando...", dealReleased: "Liberado.",
     dealRefunding: "Reembolsando...", dealRefunded: "Reembolsado.",
     msigTitle: "VaultGuard", msigDesc: "Conocido en finanzas como 'Gestión de Tesorería' · diseñamos VaultGuard para esto",
-    batchTitle: "BatchPay", batchDesc: "Conocido en finanzas como 'Desembolsos Masivos' · diseñamos BatchPay para esto",
+    batchTitle: "BulkPay", batchDesc: "Conocido en finanzas como 'Desembolsos Masivos' · diseñamos BulkPay para esto",
     proposeBtn: "Crear Propuesta", proposalId: "ID de Propuesta", confirmBtn: "Confirmar",
     msigRequired: "Confirmaciones requeridas", msigProposalInfo: "Info de la propuesta",
     msigHint: "Primero deposita en la bóveda, luego propone una transferencia · se ejecuta automáticamente al reunir suficientes confirmaciones.",
@@ -889,9 +890,9 @@ const I18N = {
     c3eyebrow: "FLOWPAY", c3headline: "Streame die Gehaltszahlungen deines Unternehmens onchain.",
     c4eyebrow: "TRUSTLOCK", c4headline: "Sichere bedingte Überweisungen, ohne Streitrisiko.",
     c5eyebrow: "VAULTGUARD", c5headline: "Wallet-Sicherheit für dein Team, nicht nur eine Person.",
-    c7eyebrow: "BATCHPAY", c7headline: "Zahle an Dutzende Empfänger in einer einzigen Transaktion.",    aboutTagline: "Ein durchgängiges Stablecoin-Finanzökosystem, von Grund auf auf Arc Network entwickelt. Ein konkreter Beweis dessen, was Arcs Infrastruktur leisten kann.",
+    c7eyebrow: "BULKPAY", c7headline: "Zahle an Dutzende Empfänger in einer einzigen Transaktion.",    aboutTagline: "Ein durchgängiges Stablecoin-Finanzökosystem, von Grund auf auf Arc Network entwickelt. Ein konkreter Beweis dessen, was Arcs Infrastruktur leisten kann.",
     aboutText: "StableLab ist ein unabhängiges Experiment von jemandem ohne Programmierhintergrund, der echte Smart Contracts auf dem Arc Network Testnet schreibt und deployt. Es begann als einfache Staking/Lending/Swap-Idee und wuchs zu einem Ökosystem aus acht Modulen heran, das etablierte institutionelle Finanzkonzepte (Rechnungsfactoring, Escrow, Treasury-Management, kontinuierliche Zahlungen) auf Arc neu umsetzt. Ziel ist nicht die Gründung eines Unternehmens, sondern zu zeigen, wie leistungsfähig Arcs Infrastruktur in echten Anwendungsfällen ist. Der Code ist Open Source, öffentlich auf GitHub, und Feedback ist immer willkommen.",
-    navProducts: "Produkte", navAbout: "Über uns", navPricing: "Preise", navContact: "Kontakt", navAccount: "Mein Konto",
+    navProducts: "Produkte", navAbout: "Über uns", navPricing: "Preise", navContact: "Kontakt", navAccount: "Mein Konto", navDashboard: "Übersicht",
     aboutTitle2: "Über StableLab",
     pricingTitle: "Preise", pricingDesc: "Transparenz ist wichtig. Hier ist die echte Gebührenstruktur jedes Moduls.",
     pricingCoreTitle: "Kernwerkzeuge", pricingCoreDesc: "Staking, Lending und Swap sind völlig kostenlos. Swap hat nur eine Gebühr von 0,25%, die an Liquiditätsanbieter geht, nicht an die Plattform.",
@@ -918,7 +919,7 @@ const I18N = {
     dealReleasing: "Wird freigegeben...", dealReleased: "Freigegeben.",
     dealRefunding: "Wird erstattet...", dealRefunded: "Erstattet.",
     msigTitle: "VaultGuard", msigDesc: "In der Finanzwelt als 'Treasury Management' bekannt · dafür haben wir VaultGuard entwickelt",
-    batchTitle: "BatchPay", batchDesc: "In der Finanzwelt als 'Sammelauszahlungen' bekannt · dafür haben wir BatchPay entwickelt",
+    batchTitle: "BulkPay", batchDesc: "In der Finanzwelt als 'Sammelauszahlungen' bekannt · dafür haben wir BulkPay entwickelt",
     proposeBtn: "Vorschlag Erstellen", proposalId: "Vorschlag-ID", confirmBtn: "Bestätigen",
     msigRequired: "Erforderliche Bestätigungen", msigProposalInfo: "Vorschlag-Info",
     msigHint: "Zahle zuerst in den Tresor ein, schlage dann eine Überweisung vor · sie wird automatisch ausgeführt, sobald genug Bestätigungen vorliegen.",
@@ -975,9 +976,9 @@ const I18N = {
     c3eyebrow: "FLOWPAY", c3headline: "让企业薪资在链上实时流动。",
     c4eyebrow: "TRUSTLOCK", c4headline: "安全的条件性转账，没有纠纷风险。",
     c5eyebrow: "VAULTGUARD", c5headline: "钱包安全属于整个团队，而非一人。",
-    c7eyebrow: "BATCHPAY", c7headline: "一笔交易向数十人付款。",    aboutTagline: "在 Arc Network 上从零构建的端到端稳定币金融生态系统。是 Arc 基础设施真正能力的具体证明。",
+    c7eyebrow: "BULKPAY", c7headline: "一笔交易向数十人付款。",    aboutTagline: "在 Arc Network 上从零构建的端到端稳定币金融生态系统。是 Arc 基础设施真正能力的具体证明。",
     aboutText: "StableLab 是一个由没有编程背景的人独立完成的实验项目，在 Arc Network Testnet 上编写并部署了真实的智能合约。它始于一个简单的质押/借贷/兑换想法，逐渐成长为一个由八个模块组成的生态系统，在 Arc 上重新构建了成熟的机构金融概念（发票保理、托管、资金管理、连续支付）。目标不是创办公司，而是展示 Arc 基础设施在真实应用场景中的强大能力。代码开源，公开在 GitHub 上，随时欢迎反馈。",
-    navProducts: "产品", navAbout: "关于", navPricing: "定价", navContact: "联系我们", navAccount: "我的账户",
+    navProducts: "产品", navAbout: "关于", navPricing: "定价", navContact: "联系我们", navAccount: "我的账户", navDashboard: "仪表盘",
     aboutTitle2: "关于 StableLab",
     pricingTitle: "定价", pricingDesc: "透明很重要。以下是每个模块真实的费用结构。",
     pricingCoreTitle: "核心工具", pricingCoreDesc: "质押、借贷和兑换完全免费。兑换仅收取 0.3% 的费用，该费用归流动性提供者所有，平台不抽成。",
@@ -1004,7 +1005,7 @@ const I18N = {
     dealReleasing: "正在放行...", dealReleased: "已放行。",
     dealRefunding: "正在退款...", dealRefunded: "已退款。",
     msigTitle: "VaultGuard", msigDesc: "金融界称之为资金管理 · 我们为此打造了 VaultGuard",
-    batchTitle: "BatchPay", batchDesc: "金融界称之为批量付款 · 我们为此打造了 BatchPay",
+    batchTitle: "BulkPay", batchDesc: "金融界称之为批量付款 · 我们为此打造了 BulkPay",
     proposeBtn: "创建提案", proposalId: "提案 ID", confirmBtn: "确认",
     msigRequired: "所需确认数", msigProposalInfo: "提案信息",
     msigHint: "先存入金库，然后提出转账提案 · 一旦收集到足够确认，将自动执行。",
@@ -1754,7 +1755,7 @@ document.querySelectorAll('.group-menu').forEach(menu => {
     { icon: "💸", name: "FlowPay", href: "./streaming/" },
     { icon: "🔒", name: "TrustLock", href: "./escrow/" },
     { icon: "🛡️", name: "VaultGuard", href: "./multisig/" },
-    { icon: "📦", name: "BatchPay", href: "./batch/" },
+    { icon: "📦", name: "BulkPay", href: "./bulk/" },
     { icon: "🌉", name: "Bridge", href: "./bridge/" }
   ];
   const html = items.map(it => '<a class="marquee-item" href="' + it.href + '"><span class="mq-icon">' + it.icon + '</span>' + it.name + '</a>').join('');
@@ -1792,7 +1793,7 @@ window.addEventListener('resize', stretchLogo);
     { kw:['flowpay','streaming','payroll','salary','salaries'], text:"FlowPay lets you pay salaries or subscriptions as a continuous flow instead of a lump sum. Recipients can withdraw what they've earned at any moment.", href:'./streaming/', label:'Open FlowPay' },
     { kw:['trustlock','escrow','arbiter','dispute'], text:"TrustLock locks funds for a deal and only releases them once the agreed condition is met. An arbiter can resolve disputes fairly if the two sides don't agree.", href:'./escrow/', label:'Open TrustLock' },
     { kw:['vaultguard','multisig','multi-sig','vault','signer'], text:"VaultGuard requires multiple approvals before any fund leaves a shared vault. A single compromised signer can never move money alone.", href:'./multisig/', label:'Open VaultGuard' },
-    { kw:['batch','batchpay','bulk','payroll run','many recipients'], text:"BatchPay lets you pay many recipients in a single transaction. List addresses and amounts, review the total, and settle everyone at once instead of sending payments one by one.", href:'./batch/', label:'Open BatchPay' },
+    { kw:['batch','batchpay','bulk','bulkpay','payroll run','many recipients'], text:"BulkPay lets you pay many recipients in a single transaction, each amount encrypted separately so only that recipient can see their own payment.", href:'./bulk/', label:'Open BulkPay' },
     { kw:['faucet','test token','free token','get token'], text:"You can claim free testnet USDC, EURC, and cirBTC directly from Circle's official faucet using the \"Get Test Tokens\" button at the top of the page." },
     { kw:['bridge','cctp','cross-chain','crosschain'], text:"Bridge lets you bring USDC to Arc from another testnet chain using Circle's CCTP, or combine balances across chains with Circle's Unified Balance.", href:'./bridge/', label:'Open Bridge' },
     { kw:['circle wallet','embedded wallet','no wallet','create wallet','email wallet'], text:"Don't have a crypto wallet yet? Create one instantly with just an email and a PIN, powered by Circle's Programmable Wallets.", href:'./wallet/', label:'Open Wallet' },
