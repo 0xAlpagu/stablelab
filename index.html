@@ -376,17 +376,17 @@
     display:flex; align-items:flex-start; justify-content:space-between; gap:20px; padding:16px 0; margin-bottom:8px;
     border-bottom:1px solid var(--border); flex-wrap:wrap;
   }
-  .topbar-left{ display:flex; flex-direction:column; align-items:flex-start; gap:5px; flex-wrap:nowrap; flex-shrink:0; max-width:250px; order:1; }
+  .topbar-left{ display:flex; flex-direction:column; align-items:flex-start; gap:5px; flex-wrap:nowrap; flex-shrink:0; max-width:250px; }
   .topbar-logo{ font-family:var(--sans); font-weight:800; font-size:38px; letter-spacing:-0.02em; color:var(--text); white-space:nowrap; line-height:1; transform-origin:left top; display:inline-block; }
   .topbar-logo .slash{ color:var(--primary); }
   .topbar-tagline{ font-size:11.5px; color:var(--text-mute); font-weight:500; line-height:1.5; text-align:justify; width:100%; display:none; }
-  .topbar-links{ display:flex; align-items:center; justify-content:flex-start; gap:16px; flex-wrap:wrap; row-gap:8px; padding-top:6px; order:3; flex-basis:100%; }
+  .topbar-links{ display:flex; align-items:center; justify-content:center; gap:18px; flex:1 1 auto; flex-wrap:nowrap; white-space:nowrap; padding-top:10px; }
   .topbar-link{
     font-size:12px; font-weight:700; color:var(--text-mute); text-decoration:none;
     text-transform:uppercase; letter-spacing:.03em; white-space:nowrap;
   }
   .topbar-link:hover{ color:var(--primary); }
-  .topbar-right{ display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex-wrap:nowrap; flex-shrink:0; padding-top:6px; margin-left:auto; order:2; }
+  .topbar-right{ display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex-wrap:nowrap; flex-shrink:0; padding-top:6px; margin-left:auto; }
   .topbar-right-top{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; max-width:320px; }
   .topbar-right-sub{
     display:flex; justify-content:flex-end; gap:12px; min-height:14px; flex-wrap:wrap; max-width:280px;
@@ -487,14 +487,13 @@
             <a href="./escrow/" data-i18n="escrowTitle" data-tip="Lock funds for a deal and release them only once the agreed work is done, with an arbiter for disputes."></a>
             <a href="./multisig/" data-i18n="msigTitle" data-tip="Require multiple approvals before funds leave a shared vault. No single signer can move money alone."></a>
             <a href="./bulk/" data-i18n="batchTitle" data-tip="Pay many recipients in a single transaction instead of sending payments one by one."></a>
+            <a href="./dashboard/" data-i18n="navDashboard" data-tip="See your balances, positions, and recent activity across every module in one place."></a>
           </div>
         </div>
       </div>
-      <a class="topbar-link" href="./dashboard/" data-i18n="navDashboard"></a>
       <a class="topbar-link" href="./pricing/" data-i18n="navPricing"></a>
       <a class="topbar-link" href="./about/" data-i18n="navAbout"></a>
       <a class="topbar-link" href="./contact/" data-i18n="navContact"></a>
-      <a class="topbar-link" href="./wallet/" data-i18n="navWallet"></a>
     </div>
     <div class="topbar-right">
       <div class="topbar-right-top">
@@ -573,6 +572,12 @@
       <div class="carousel-headline" data-i18n="c7headline"></div>
       <div class="carousel-desc" data-i18n="c7desc"></div>
     </a>
+    <a class="carousel-slide" href="./bridge/" data-slide="8">
+      <div class="carousel-icon" style="background:#1e88a8;">🌉</div>
+      <div class="carousel-eyebrow" data-i18n="c8eyebrow"></div>
+      <div class="carousel-headline" data-i18n="c8headline"></div>
+      <div class="carousel-desc" data-i18n="c8desc"></div>
+    </a>
     <div class="carousel-controls">
       <button class="carousel-arrow" id="carouselPrev">←</button>
       <div class="carousel-dots" id="carouselDots"></div>
@@ -621,7 +626,8 @@ const I18N = {
     c3eyebrow: "FLOWPAY", c3headline: "Kurumunuzun maaş ödemelerini zincir üzerinde akıtın.",
     c4eyebrow: "TRUSTLOCK", c4headline: "Anlaşmazlık riski olmadan, güvenli şartlı transferler.",
     c5eyebrow: "VAULTGUARD", c5headline: "Tek kişiye değil, ekibinize bağlı cüzdan güvenliği.",
-    c7eyebrow: "BULKPAY", c7headline: "Onlarca kişiye tek işlemde ödeme yap.",    aboutTagline: "Arc üzerinde sıfırdan inşa edilmiş, uçtan uca çalışan bir stablecoin finans ekosistemi. Arc'ın altyapısıyla neler yapılabileceğinin somut bir kanıtı.",
+    c7eyebrow: "BULKPAY", c7headline: "Onlarca kişiye tek işlemde ödeme yap.",
+    c8eyebrow: "BRIDGE", c8headline: "USDC'ni herhangi bir zincirden Arc'a getir.",    aboutTagline: "Arc üzerinde sıfırdan inşa edilmiş, uçtan uca çalışan bir stablecoin finans ekosistemi. Arc'ın altyapısıyla neler yapılabileceğinin somut bir kanıtı.",
     aboutText: "StableLab, kod bilmeyen birinin, Arc Network Testnet üzerinde gerçek akıllı sözleşmeler yazıp deploy ederek geliştirdiği bağımsız bir deney projesidir. Basit bir stake/borç/takas fikriyle başladı; zamanla kurumsal finans dünyasının köklü kavramlarını (fatura faktoringi, escrow, hazine yönetimi, sürekli ödemeler) Arc üzerinde yeniden inşa eden sekiz modüllü bir ekosisteme dönüştü. Amaç bir şirket kurmak değil, Arc'ın sunduğu altyapının gerçek kullanım senaryolarında ne kadar güçlü olduğunu göstermek. Kod açık kaynaklıdır, GitHub üzerinden herkese açıktır ve geri bildirime her zaman açığız.",
     navProducts: "Ürünler", navAbout: "Hakkında", navPricing: "Fiyatlandırma", navContact: "Bize Ulaşın", navAccount: "Hesabım", navDashboard: "Panel",
     aboutTitle2: "StableLab Hakkında",
@@ -708,6 +714,7 @@ const I18N = {
     c4eyebrow: "TRUSTLOCK", c4headline: "Secure conditional transfers, without the dispute risk.",
     c5eyebrow: "VAULTGUARD", c5headline: "Wallet security tied to your team, not one person.",
     c7eyebrow: "BULKPAY", c7headline: "Pay dozens of people in a single transaction.",
+    c8eyebrow: "BRIDGE", c8headline: "Bring your USDC to Arc from any chain.",
     c0desc: "Deposit your USDC and earn a steady, predictable reward every second it's locked. No lockup periods, no complexity: withdraw your principal and reward together whenever you like.",
     c1desc: "Post your USDC or cirBTC as collateral and borrow USDC up to 66% of its value instantly, without selling. Repay any time to unlock your collateral again.",
     c2desc: "Trade USDC, EURC, and cirBTC instantly through liquidity pools, with prices set transparently by the pool's own reserves. A small 0.3% fee rewards the people supplying that liquidity.",
@@ -716,6 +723,7 @@ const I18N = {
     c5desc: "Require multiple approvals before any fund leaves a shared vault. A single compromised signer can never move money alone.",
     c6desc: "Upload an unpaid invoice and receive 97% of its value in your wallet within seconds, instead of waiting 30-60 days for your client to pay.",
     c7desc: "List recipients and amounts, review the total, and settle everyone in one onchain transaction instead of sending payments one by one.",
+    c8desc: "Bridge USDC to Arc from other EVM chains using Circle's CCTP, or combine balances across chains into a unified view.",
     aboutTagline: "An end-to-end stablecoin finance ecosystem, built from scratch on Arc Network. A concrete demonstration of what Arc's infrastructure can do.",
     aboutText: "StableLab is an independent experiment built by someone with no coding background, writing and deploying real smart contracts on Arc Network Testnet. It started as a simple stake/lend/swap idea and grew into an eight-module ecosystem that reimagines established institutional finance concepts (invoice factoring, escrow, treasury management, continuous payments) on Arc. The goal isn't to found a company. It's to show how strong Arc's infrastructure is in real-world use cases. The code is open-source, public on GitHub, and always open to feedback.",
     navProducts: "Products", navAbout: "About", navPricing: "Pricing", navContact: "Contact", navAccount: "My Account", navWallet: "Create Circle Wallet", navDashboard: "Dashboard",
@@ -803,7 +811,8 @@ const I18N = {
     c3eyebrow: "FLOWPAY", c3headline: "Transmite la nómina de tu empresa en la cadena.",
     c4eyebrow: "TRUSTLOCK", c4headline: "Transferencias condicionales seguras, sin riesgo de disputa.",
     c5eyebrow: "VAULTGUARD", c5headline: "Seguridad de billetera ligada a tu equipo, no a una persona.",
-    c7eyebrow: "BULKPAY", c7headline: "Paga a decenas de personas en una sola transacción.",    aboutTagline: "Un ecosistema financiero de stablecoins de extremo a extremo, construido desde cero en Arc Network. Una demostración concreta de lo que la infraestructura de Arc puede hacer.",
+    c7eyebrow: "BULKPAY", c7headline: "Paga a decenas de personas en una sola transacción.",
+    c8eyebrow: "BRIDGE", c8headline: "Trae tu USDC a Arc desde cualquier cadena.",    aboutTagline: "Un ecosistema financiero de stablecoins de extremo a extremo, construido desde cero en Arc Network. Una demostración concreta de lo que la infraestructura de Arc puede hacer.",
     aboutText: "StableLab es un experimento independiente construido por alguien sin experiencia en programación, escribiendo y desplegando contratos inteligentes reales en Arc Network Testnet. Comenzó como una simple idea de staking/préstamos/intercambio y creció hasta convertirse en un ecosistema de ocho módulos que reimagina conceptos financieros institucionales establecidos (factoraje de facturas, escrow, gestión de tesorería, pagos continuos) en Arc. El objetivo no es fundar una empresa, sino mostrar cuán sólida es la infraestructura de Arc en casos de uso reales. El código es de código abierto, público en GitHub, y siempre abierto a comentarios.",
     navProducts: "Productos", navAbout: "Acerca de", navPricing: "Precios", navContact: "Contacto", navAccount: "Mi Cuenta", navDashboard: "Panel",
     aboutTitle2: "Acerca de StableLab",
@@ -889,7 +898,8 @@ const I18N = {
     c3eyebrow: "FLOWPAY", c3headline: "Streame die Gehaltszahlungen deines Unternehmens onchain.",
     c4eyebrow: "TRUSTLOCK", c4headline: "Sichere bedingte Überweisungen, ohne Streitrisiko.",
     c5eyebrow: "VAULTGUARD", c5headline: "Wallet-Sicherheit für dein Team, nicht nur eine Person.",
-    c7eyebrow: "BULKPAY", c7headline: "Zahle an Dutzende Empfänger in einer einzigen Transaktion.",    aboutTagline: "Ein durchgängiges Stablecoin-Finanzökosystem, von Grund auf auf Arc Network entwickelt. Ein konkreter Beweis dessen, was Arcs Infrastruktur leisten kann.",
+    c7eyebrow: "BULKPAY", c7headline: "Zahle an Dutzende Empfänger in einer einzigen Transaktion.",
+    c8eyebrow: "BRIDGE", c8headline: "Bring dein USDC von jeder Chain zu Arc.",    aboutTagline: "Ein durchgängiges Stablecoin-Finanzökosystem, von Grund auf auf Arc Network entwickelt. Ein konkreter Beweis dessen, was Arcs Infrastruktur leisten kann.",
     aboutText: "StableLab ist ein unabhängiges Experiment von jemandem ohne Programmierhintergrund, der echte Smart Contracts auf dem Arc Network Testnet schreibt und deployt. Es begann als einfache Staking/Lending/Swap-Idee und wuchs zu einem Ökosystem aus acht Modulen heran, das etablierte institutionelle Finanzkonzepte (Rechnungsfactoring, Escrow, Treasury-Management, kontinuierliche Zahlungen) auf Arc neu umsetzt. Ziel ist nicht die Gründung eines Unternehmens, sondern zu zeigen, wie leistungsfähig Arcs Infrastruktur in echten Anwendungsfällen ist. Der Code ist Open Source, öffentlich auf GitHub, und Feedback ist immer willkommen.",
     navProducts: "Produkte", navAbout: "Über uns", navPricing: "Preise", navContact: "Kontakt", navAccount: "Mein Konto", navDashboard: "Übersicht",
     aboutTitle2: "Über StableLab",
@@ -975,7 +985,8 @@ const I18N = {
     c3eyebrow: "FLOWPAY", c3headline: "让企业薪资在链上实时流动。",
     c4eyebrow: "TRUSTLOCK", c4headline: "安全的条件性转账，没有纠纷风险。",
     c5eyebrow: "VAULTGUARD", c5headline: "钱包安全属于整个团队，而非一人。",
-    c7eyebrow: "BULKPAY", c7headline: "一笔交易向数十人付款。",    aboutTagline: "在 Arc Network 上从零构建的端到端稳定币金融生态系统。是 Arc 基础设施真正能力的具体证明。",
+    c7eyebrow: "BULKPAY", c7headline: "一笔交易向数十人付款。",
+    c8eyebrow: "BRIDGE", c8headline: "将你的 USDC 从任何链带到 Arc。",    aboutTagline: "在 Arc Network 上从零构建的端到端稳定币金融生态系统。是 Arc 基础设施真正能力的具体证明。",
     aboutText: "StableLab 是一个由没有编程背景的人独立完成的实验项目，在 Arc Network Testnet 上编写并部署了真实的智能合约。它始于一个简单的质押/借贷/兑换想法，逐渐成长为一个由八个模块组成的生态系统，在 Arc 上重新构建了成熟的机构金融概念（发票保理、托管、资金管理、连续支付）。目标不是创办公司，而是展示 Arc 基础设施在真实应用场景中的强大能力。代码开源，公开在 GitHub 上，随时欢迎反馈。",
     navProducts: "产品", navAbout: "关于", navPricing: "定价", navContact: "联系我们", navAccount: "我的账户", navDashboard: "仪表盘",
     aboutTitle2: "关于 StableLab",
